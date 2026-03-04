@@ -69,8 +69,8 @@ namespace TempConvPro.Services
                 }
 
                 var json = await File.ReadAllTextAsync(_settingsFilePath);
-                var settings = JsonSerializer.Deserialize<AppSettings>(json);
-                
+                var settings = JsonSerializer.Deserialize(json, AppSettingsContext.Default.AppSettings);
+
                 return settings ?? new AppSettings();
             }
             catch (Exception ex)
@@ -85,19 +85,41 @@ namespace TempConvPro.Services
         {
             try
             {
-                var options = new JsonSerializerOptions
-                {
-                    WriteIndented = true // Pretty print for readability
-                };
+                // Ensure directory still exists
+                Directory.CreateDirectory(_settingsDirectory);
 
-                var json = JsonSerializer.Serialize(settings, options);
-                await File.WriteAllTextAsync(_settingsFilePath, json);
+                var json = JsonSerializer.Serialize(settings, AppSettingsContext.Default.AppSettings);
+
+                // Write to temp file first, then move (atomic operation)
+                var tempFile = _settingsFilePath + ".tmp";
+                await File.WriteAllTextAsync(tempFile, json);
+
+                if (File.Exists(_settingsFilePath))
+                {
+                    File.Delete(_settingsFilePath);
+                }
+
+                File.Move(tempFile, _settingsFilePath);
+
+                System.Diagnostics.Debug.WriteLine($"Settings saved successfully to: {_settingsFilePath}");
                 return true;
             }
             catch (Exception ex)
             {
                 // Log error in production
-                System.Diagnostics.Debug.WriteLine($"Error saving settings: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error saving settings: {ex}");
+                System.Diagnostics.Debug.WriteLine($"Settings path: {_settingsFilePath}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Try to write error to a log file for published apps
+                try
+                {
+                    var errorLogPath = Path.Combine(_settingsDirectory, "error.log");
+                    await File.AppendAllTextAsync(errorLogPath, 
+                        $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Save error: {ex}\n");
+                }
+                catch { /* Ignore if we can't write the error log */ }
+
                 return false;
             }
         }

@@ -6,6 +6,15 @@ using System.Text.Json.Serialization;
 namespace TempConvPro.Models
 {
     /// <summary>
+    /// JSON source generation context for trim-safe serialization
+    /// </summary>
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(AppSettings))]
+    internal partial class AppSettingsContext : JsonSerializerContext
+    {
+    }
+
+    /// <summary>
     /// Application settings that persist between sessions
     /// Serialized to JSON and saved to local storage
     /// </summary>

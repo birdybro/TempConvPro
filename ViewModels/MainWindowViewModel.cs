@@ -22,6 +22,8 @@ namespace TempConvPro.ViewModels
         private IFileService? _fileService;
         private bool _isLoadingSettings = false;
         private CancellationTokenSource? _statusMessageCancellation;
+        private CancellationTokenSource? _autoSaveCancellation;
+        private Task? _pendingSaveTask;
 
         [ObservableProperty]
         private string _celsius = "0";
@@ -128,6 +130,12 @@ namespace TempConvPro.ViewModels
             {
                 CheckAbsoluteZero(c);
                 UpdateFromCelsius(c);
+
+                // Auto-save when value changes (debounced)
+                if (AutoSaveSettings && !_isLoadingSettings)
+                {
+                    DebouncedSave();
+                }
             }
         }
 
@@ -138,6 +146,12 @@ namespace TempConvPro.ViewModels
                 var c = (f - 32) * (5d / 9d);
                 CheckAbsoluteZero(c);
                 UpdateFromFahrenheit(f);
+
+                // Auto-save when value changes (debounced)
+                if (AutoSaveSettings && !_isLoadingSettings)
+                {
+                    DebouncedSave();
+                }
             }
         }
 
@@ -148,7 +162,31 @@ namespace TempConvPro.ViewModels
                 var c = k - 273.15;
                 CheckAbsoluteZero(c);
                 UpdateFromKelvin(k);
+
+                // Auto-save when value changes (debounced)
+                if (AutoSaveSettings && !_isLoadingSettings)
+                {
+                    DebouncedSave();
+                }
             }
+        }
+
+        private void DebouncedSave()
+        {
+            // Cancel any pending save
+            _autoSaveCancellation?.Cancel();
+            _autoSaveCancellation = new CancellationTokenSource();
+
+            var cancellationToken = _autoSaveCancellation.Token;
+
+            // Save after 500ms of no changes
+            _pendingSaveTask = Task.Delay(500, cancellationToken).ContinueWith(async _ =>
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    await SaveCurrentSettingsAsync();
+                }
+            }, cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
         }
 
         partial void OnRankineChanged(string value)
@@ -766,11 +804,12 @@ namespace TempConvPro.ViewModels
                 if (!success)
                 {
                     ShowStatusMessage("⚠️ Failed to save settings", 4);
+                    System.Diagnostics.Debug.WriteLine($"Settings save failed. Path: {_settingsService.GetSettingsFilePath()}");
                 }
             }
             catch (Exception ex)
             {
-                ShowStatusMessage($"❌ Error: {ex.Message}", 5);
+                ShowStatusMessage($"❌ Save error: {ex.Message}", 5);
                 System.Diagnostics.Debug.WriteLine($"Error in SaveCurrentSettingsAsync: {ex}");
             }
         }
