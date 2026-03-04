@@ -1,0 +1,237 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TempConvPro.Views.FormulasWindow"
+        Title="Temperature Conversion Formulas"
+        Width="600"
+        Height="700"
+        CanResize="true"
+        MinWidth="500"
+        MinHeight="500"
+        Icon="/Assets/avalonia-logo.ico">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="SectionBackgroundBrush" Color="{DynamicResource SystemAltMediumColor}" />
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Padding="20">
+            <StackPanel Spacing="15">
+                <!-- Header -->
+                <TextBlock FontWeight="Bold" 
+                          FontSize="20" 
+                          HorizontalAlignment="Center"
+                          Margin="0 0 0 10">
+                    🧮 Temperature Conversion Formulas
+                </TextBlock>
+
+                <!-- Modern Scales Section -->
+                <Border Padding="15" 
+                        CornerRadius="8" 
+                        Background="#20555577">
+                    <StackPanel Spacing="12">
+                        <TextBlock FontWeight="Bold" 
+                                  FontSize="16" 
+                                  Margin="0 0 0 5">
+                            Modern Temperature Scales
+                        </TextBlock>
+
+                        <!-- Celsius -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14" 
+                                      Cursor="Hand"
+                                      PointerPressed="Celsius_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                🌡️ Celsius (°C) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+Base scale (SI unit)
+• From Fahrenheit: C = (F - 32) × (5/9)
+• From Kelvin: C = K - 273.15
+• From Rankine: C = (R - 491.67) × (5/9)
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Fahrenheit -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14"
+                                      Cursor="Hand"
+                                      PointerPressed="Fahrenheit_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                🌡️ Fahrenheit (°F) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+Common in USA
+• From Celsius: F = C × (9/5) + 32
+• From Kelvin: F = K × (9/5) - 459.67
+• From Rankine: F = R - 459.67
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Kelvin -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14"
+                                      Cursor="Hand"
+                                      PointerPressed="Kelvin_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                🌡️ Kelvin (K) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+Absolute temperature scale
+• From Celsius: K = C + 273.15
+• From Fahrenheit: K = (F + 459.67) × (5/9)
+• From Rankine: K = R × (5/9)
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Rankine -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14"
+                                      Cursor="Hand"
+                                      PointerPressed="Rankine_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                🌡️ Rankine (°R) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+Absolute scale (Fahrenheit-based)
+• From Celsius: R = (C + 273.15) × (9/5)
+• From Fahrenheit: R = F + 459.67
+• From Kelvin: R = K × (9/5)
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Historical Scales Section -->
+                <Border Padding="15" 
+                        CornerRadius="8" 
+                        Background="#20776655">
+                    <StackPanel Spacing="12">
+                        <TextBlock FontWeight="Bold" 
+                                  FontSize="16" 
+                                  Margin="0 0 0 5">
+                            Historical Temperature Scales
+                        </TextBlock>
+
+                        <!-- Réaumur -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14"
+                                      Cursor="Hand"
+                                      PointerPressed="Reaumur_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                📜 Réaumur (°Ré) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+French scale (1730), used until 1960s
+Water freezes at 0°, boils at 80°
+• From Celsius: Ré = C × (4/5)
+• To Celsius: C = Ré × (5/4)
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Rømer -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14"
+                                      Cursor="Hand"
+                                      PointerPressed="Romer_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                📜 Rømer (°Rø) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+Danish scale (1701), inspired Fahrenheit
+Water freezes at 7.5°, boils at 60°
+• From Celsius: Rø = C × (21/40) + 7.5
+• To Celsius: C = (Rø - 7.5) × (40/21)
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Newton -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14"
+                                      Cursor="Hand"
+                                      PointerPressed="Newton_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                📜 Newton (°N) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+Isaac Newton scale (1701)
+Water freezes at 0°, boils at 33°
+• From Celsius: N = C × (33/100)
+• To Celsius: C = N × (100/33)
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Delisle -->
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" FontSize="14"
+                                      Cursor="Hand"
+                                      PointerPressed="Delisle_Click"
+                                      ToolTip.Tip="Click to open Wikipedia article">
+                                📜 Delisle (°De) 🔗
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                      FontSize="12" 
+                                      TextWrapping="Wrap"
+                                      Margin="5 2 0 0">
+Russian scale (1732), INVERTED! 🔄
+Water boils at 0°, freezes at 150°
+• From Celsius: De = (100 - C) × (3/2)
+• To Celsius: C = 100 - De × (2/3)
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Quick Reference -->
+                <Border Padding="15" 
+                        CornerRadius="8" 
+                        Background="{DynamicResource SectionBackgroundBrush}">
+                    <StackPanel Spacing="8">
+                        <TextBlock FontWeight="SemiBold" 
+                                  FontSize="14">
+                            📊 Quick Reference Points
+                        </TextBlock>
+                        <TextBlock FontFamily="Consolas,Courier New,monospace" 
+                                  FontSize="11" 
+                                  TextWrapping="Wrap">
+Absolute Zero:    -273.15°C = -459.67°F = 0K = 0°R
+Water Freezes:         0°C =   32.00°F = 273.15K = 491.67°R
+Water Boils:         100°C =  212.00°F = 373.15K = 671.67°R
+Body Temperature:     37°C =   98.60°F = 310.15K = 558.27°R
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Info -->
+                <TextBlock FontSize="11" 
+                          Foreground="{DynamicResource SystemBaseMediumColor}"
+                          TextWrapping="Wrap"
+                          TextAlignment="Center"
+                          Margin="0 10 0 0">
+                    This window can be moved and resized. It stays open while you work with the main window.
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</Window>
+

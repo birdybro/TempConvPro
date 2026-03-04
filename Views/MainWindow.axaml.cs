@@ -194,6 +194,12 @@ namespace TempConvPro.Views
             }
         }
 
+        private void Formulas_Click(object? sender, RoutedEventArgs e)
+        {
+            var formulasWindow = new FormulasWindow();
+            formulasWindow.Show(); // Non-modal - doesn't block main window
+        }
+
         private async Task RestoreWindowStateAsync()
         {
             var settings = await _settingsService.LoadSettingsAsync();

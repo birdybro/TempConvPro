@@ -363,31 +363,6 @@
                           TextWrapping="Wrap"/>
             </Border>
 
-            <!-- Formula Display Panel (Collapsible) -->
-            <Border Margin="5" 
-                    Padding="10" 
-                    CornerRadius="8" 
-                    Background="{DynamicResource InfoBackgroundBrush}"
-                    IsVisible="{Binding ShowFormulaPanel}"
-                    Name="FormulaPanel">
-                <Border.Transitions>
-                    <Transitions>
-                        <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
-                    </Transitions>
-                </Border.Transitions>
-                <StackPanel>
-                    <TextBlock FontWeight="SemiBold" 
-                              FontSize="16" 
-                              Margin="0 0 0 10">
-                        🧮 Conversion Formulas
-                    </TextBlock>
-                    <TextBlock Text="{Binding FormulaDisplay}" 
-                              FontFamily="Consolas,Courier New,monospace"
-                              FontSize="12"
-                              TextWrapping="Wrap"/>
-                </StackPanel>
-            </Border>
-
             <!-- Controls -->
             <Border Margin="5" Padding="10" CornerRadius="8" Background="{DynamicResource SectionBackgroundBrush}">
                 <StackPanel>
@@ -428,8 +403,8 @@
                                 📋 Copy Result
                             </Button>
                             <Button Margin="5" 
-                                   Command="{Binding ToggleFormulaCommand}"
-                                   ToolTip.Tip="Show/hide conversion formulas">
+                                   Click="Formulas_Click"
+                                   ToolTip.Tip="Open formulas window">
                                 🧮 Formulas
                             </Button>
                         </StackPanel>
