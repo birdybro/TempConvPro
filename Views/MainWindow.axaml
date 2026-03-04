@@ -1,0 +1,626 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TempConvPro.ViewModels"
+        xmlns:behaviors="using:TempConvPro.Behaviors"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="950"
+        x:Class="TempConvPro.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Temperature Converter Pro"
+        Width="550"
+        SizeToContent="Height"
+        MinWidth="500"
+        MinHeight="600"
+        MaxHeight="1200">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <!-- Keyboard Shortcuts -->
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyToClipboardCommand}" />
+        <KeyBinding Gesture="Ctrl+R" Command="{Binding ClearAllCommand}" />
+        <KeyBinding Gesture="Ctrl+H" Command="{Binding ClearHistoryCommand}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding ToggleSettingsCommand}" />
+    </Window.KeyBindings>
+
+    <Window.Resources>
+        <!-- Theme-aware colors -->
+        <SolidColorBrush x:Key="TitleBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+        <SolidColorBrush x:Key="SectionBackgroundBrush" Color="{DynamicResource SystemAltMediumColor}" />
+        <SolidColorBrush x:Key="WarningBackgroundBrush" Color="{DynamicResource SystemErrorColor}" Opacity="0.2" />
+        <SolidColorBrush x:Key="WarningForegroundBrush" Color="{DynamicResource SystemErrorColor}" />
+        <SolidColorBrush x:Key="InfoBackgroundBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+        <SolidColorBrush x:Key="HistoryItemBackgroundBrush" Color="{DynamicResource SystemChromeMediumColor}" />
+        <SolidColorBrush x:Key="ErrorBorderBrush" Color="{DynamicResource SystemErrorColor}" />
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="1150">
+        <StackPanel Margin="10">
+            <!-- Title -->
+            <Border Margin="5" CornerRadius="10" Background="{DynamicResource TitleBackgroundBrush}">
+                <TextBlock Margin="5"
+                          FontSize="24"
+                          FontWeight="Bold"
+                          HorizontalAlignment="Center"
+                          Text="🌡️ Temperature Converter Pro">
+                </TextBlock>
+            </Border>
+
+            <!-- Temperature Input Grid -->
+            <Border Margin="5" Padding="10" CornerRadius="8" Background="{DynamicResource SectionBackgroundBrush}">
+                <Grid ColumnDefinitions="140, *, 60"
+                      RowDefinitions="Auto, Auto, Auto, Auto, Auto">
+
+                    <!-- Headers -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" 
+                              Margin="10 5" 
+                              FontWeight="SemiBold"
+                              Text="Unit"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" 
+                              Margin="10 5" 
+                              FontWeight="SemiBold"
+                              Text="Value"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" 
+                              Margin="10 5" 
+                              FontWeight="SemiBold"
+                              Text="Symbol"/>
+
+                    <!-- Celsius -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Formula: F = C × (9/5) + 32, K = C + 273.15&#x0a;Min: -273.15°C (absolute zero)">
+                        Celsius
+                    </TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Celsius}"
+                            Watermark="Enter Celsius temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="True"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}" InputGesture="Ctrl+C"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="1" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        °C
+                    </TextBlock>
+
+                    <!-- Fahrenheit -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Formula: C = (F - 32) × (5/9)&#x0a;Min: -459.67°F (absolute zero)">
+                        Fahrenheit
+                    </TextBlock>
+                    <TextBox Grid.Row="2" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Fahrenheit}"
+                            Watermark="Enter Fahrenheit temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="True"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}" InputGesture="Ctrl+C"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="2" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        °F
+                    </TextBlock>
+
+                    <!-- Kelvin -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Formula: K = C + 273.15&#x0a;Min: 0K (absolute zero - no negative values)">
+                        Kelvin
+                    </TextBlock>
+                    <TextBox Grid.Row="3" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Kelvin}"
+                            Watermark="Enter Kelvin temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="False"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}" InputGesture="Ctrl+C"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="3" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        K
+                    </TextBlock>
+
+                    <!-- Rankine -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Formula: °R = (C + 273.15) × (9/5)&#x0a;Min: 0°R (absolute zero - aerospace/engineering scale)">
+                        Rankine
+                    </TextBlock>
+                    <TextBox Grid.Row="4" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Rankine}"
+                            Watermark="Enter Rankine temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="False"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}" InputGesture="Ctrl+C"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="4" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        °R
+                    </TextBlock>
+                </Grid>
+            </Border>
+
+            <!-- Historical Scales Toggle -->
+            <Border Margin="5" Padding="10" CornerRadius="8" Background="{DynamicResource SectionBackgroundBrush}">
+                <CheckBox IsChecked="{Binding ShowHistoricalScales}"
+                         HorizontalAlignment="Center">
+                    <TextBlock FontWeight="SemiBold">
+                        📜 Show Historical Temperature Scales
+                    </TextBlock>
+                </CheckBox>
+            </Border>
+
+            <!-- Historical Temperature Scales (Collapsible) -->
+            <Border Margin="5" 
+                    Padding="10" 
+                    CornerRadius="8" 
+                    Background="{DynamicResource SectionBackgroundBrush}"
+                    IsVisible="{Binding ShowHistoricalScales}">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                    </Transitions>
+                </Border.Transitions>
+                <Grid ColumnDefinitions="140, *, 60"
+                      RowDefinitions="Auto, Auto, Auto, Auto, Auto">
+
+                    <!-- Header -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                              Margin="10 5" 
+                              FontWeight="SemiBold"
+                              FontSize="14"
+                              Text="📜 Historical Temperature Scales"/>
+
+                    <!-- Réaumur -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Réaumur scale (historical European)&#x0a;Formula: °Ré = C × (4/5)">
+                        Réaumur
+                    </TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Reaumur}"
+                            Watermark="Enter Réaumur temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="True"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="1" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        °Ré
+                    </TextBlock>
+
+                    <!-- Rømer -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Rømer scale (Danish, 1701)&#x0a;Formula: °Rø = C × (21/40) + 7.5">
+                        Rømer
+                    </TextBlock>
+                    <TextBox Grid.Row="2" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Romer}"
+                            Watermark="Enter Rømer temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="True"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="2" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        °Rø
+                    </TextBlock>
+
+                    <!-- Newton -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Newton scale (Isaac Newton, 1701)&#x0a;Formula: °N = C × (33/100)">
+                        Newton
+                    </TextBlock>
+                    <TextBox Grid.Row="3" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Newton}"
+                            Watermark="Enter Newton temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="True"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="3" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        °N
+                    </TextBlock>
+
+                    <!-- Delisle -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              ToolTip.Tip="Delisle scale (Russian, inverted!)&#x0a;Formula: °De = (100 - C) × (3/2)">
+                        Delisle
+                    </TextBlock>
+                    <TextBox Grid.Row="4" Grid.Column="1" 
+                            Margin="5" 
+                            Text="{Binding Delisle}"
+                            Watermark="Enter Delisle temperature"
+                            behaviors:NumericInputBehavior.IsEnabled="True"
+                            behaviors:NumericInputBehavior.AllowNegative="True"
+                            behaviors:NumericInputBehavior.AllowDecimal="True">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                                <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
+                    <TextBlock Grid.Row="4" Grid.Column="2" 
+                              Margin="10" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              FontSize="16">
+                        °De
+                    </TextBlock>
+                </Grid>
+            </Border>
+
+            <!-- Absolute Zero Warning -->
+            <Border Margin="5" 
+                    Padding="10" 
+                    CornerRadius="8" 
+                    Background="{DynamicResource WarningBackgroundBrush}"
+                    IsVisible="{Binding ShowAbsoluteZeroWarning}">
+                <TextBlock Text="{Binding WarningMessage}" 
+                          Foreground="{DynamicResource WarningForegroundBrush}"
+                          FontWeight="SemiBold"
+                          TextWrapping="Wrap"/>
+            </Border>
+
+            <!-- Formula Display Panel (Collapsible) -->
+            <Border Margin="5" 
+                    Padding="10" 
+                    CornerRadius="8" 
+                    Background="{DynamicResource InfoBackgroundBrush}"
+                    IsVisible="{Binding ShowFormulaPanel}"
+                    Name="FormulaPanel">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                    </Transitions>
+                </Border.Transitions>
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" 
+                              FontSize="16" 
+                              Margin="0 0 0 10">
+                        🧮 Conversion Formulas
+                    </TextBlock>
+                    <TextBlock Text="{Binding FormulaDisplay}" 
+                              FontFamily="Consolas,Courier New,monospace"
+                              FontSize="12"
+                              TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Controls -->
+            <Border Margin="5" Padding="10" CornerRadius="8" Background="{DynamicResource SectionBackgroundBrush}">
+                <StackPanel>
+                    <!-- Temperature Presets -->
+                    <StackPanel Orientation="Horizontal" 
+                               HorizontalAlignment="Center" 
+                               Margin="5">
+                        <TextBlock Text="Quick Presets:" 
+                                  VerticalAlignment="Center" 
+                                  Margin="0 0 10 0"
+                                  ToolTip.Tip="Select a common temperature"/>
+                        <ComboBox ItemsSource="{Binding TemperaturePresets}" 
+                                 SelectedItem="{Binding SelectedPreset}"
+                                 PlaceholderText="Choose preset..."
+                                 Width="200">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayText}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Action Buttons - Two Rows -->
+                    <StackPanel HorizontalAlignment="Center" Margin="5">
+                        <!-- First Row: Main Actions -->
+                        <StackPanel Orientation="Horizontal" 
+                                   HorizontalAlignment="Center"
+                                   Margin="0 0 0 5">
+                            <Button Margin="5" 
+                                   Command="{Binding ClearAllCommand}"
+                                   ToolTip.Tip="Reset all values to default (Ctrl+R)">
+                                🗑️ Clear All
+                            </Button>
+                            <Button Margin="5" 
+                                   Command="{Binding CopyToClipboardCommand}"
+                                   ToolTip.Tip="Copy current conversion to clipboard (Ctrl+C)">
+                                📋 Copy Result
+                            </Button>
+                            <Button Margin="5" 
+                                   Command="{Binding ToggleFormulaCommand}"
+                                   ToolTip.Tip="Show/hide conversion formulas">
+                                🧮 Formulas
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Second Row: Preset and Settings -->
+                        <StackPanel Orientation="Horizontal" 
+                                   HorizontalAlignment="Center">
+                            <Button Margin="5" 
+                                   Command="{Binding SaveAsCustomPresetCommand}"
+                                   ToolTip.Tip="Save current temperature as a custom preset">
+                                ⭐ Save Preset
+                            </Button>
+                            <Button Margin="5" 
+                                   Command="{Binding ToggleSettingsCommand}"
+                                   ToolTip.Tip="Show/hide settings panel (Ctrl+S)">
+                                ⚙️ Settings
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Settings Panel (Collapsible with Animation) -->
+            <Border Margin="5" 
+                    Padding="10" 
+                    CornerRadius="8" 
+                    Background="{DynamicResource SectionBackgroundBrush}"
+                    IsVisible="{Binding ShowSettingsPanel}"
+                    Name="SettingsPanel">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                    </Transitions>
+                </Border.Transitions>
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" 
+                              FontSize="16" 
+                              Margin="0 0 0 10">
+                        ⚙️ Settings
+                    </TextBlock>
+
+                    <!-- Auto-save setting -->
+                    <CheckBox IsChecked="{Binding AutoSaveSettings}"
+                             Margin="0 5"
+                             ToolTip.Tip="Automatically save settings when changed">
+                        <TextBlock TextWrapping="Wrap">
+                            Auto-save settings
+                        </TextBlock>
+                    </CheckBox>
+
+                    <!-- Restore last values -->
+                    <CheckBox IsChecked="{Binding RestoreLastValues}"
+                             Margin="0 5"
+                             ToolTip.Tip="Restore last temperature values on startup">
+                        <TextBlock TextWrapping="Wrap">
+                            Restore last values on startup
+                        </TextBlock>
+                    </CheckBox>
+
+                    <!-- Action buttons -->
+                    <StackPanel Orientation="Horizontal" 
+                               HorizontalAlignment="Center" 
+                               Margin="0 10 0 0">
+                        <Button Margin="5" 
+                               Command="{Binding SaveSettingsCommand}"
+                               ToolTip.Tip="Manually save current settings">
+                            💾 Save Settings
+                        </Button>
+                        <Button Margin="5" 
+                               Command="{Binding ResetSettingsCommand}"
+                               ToolTip.Tip="Reset all settings to defaults">
+                            🔄 Reset to Defaults
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Settings info -->
+                    <TextBlock Margin="0 10 0 0" 
+                              FontSize="11" 
+                              Foreground="{DynamicResource SystemBaseMediumColor}"
+                              TextWrapping="Wrap">
+                        Settings are saved to your AppData folder and persist between sessions. Window size and position are also remembered.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- Conversion History -->
+            <Border Margin="5" Padding="10" CornerRadius="8" Background="{DynamicResource SectionBackgroundBrush}">
+                <StackPanel>
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0"
+                                  FontWeight="SemiBold" 
+                                  FontSize="16" 
+                                  Margin="0 0 0 5">
+                            📜 Conversion History
+                        </TextBlock>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Command="{Binding ExportHistoryToCsvCommand}"
+                                   ToolTip.Tip="Export history to CSV file"
+                                   Padding="5 2"
+                                   Margin="0 0 5 0"
+                                   IsEnabled="{Binding ConversionHistory.Count}">
+                                CSV
+                            </Button>
+                            <Button Command="{Binding ExportHistoryToJsonCommand}"
+                                   ToolTip.Tip="Export history to JSON file"
+                                   Padding="5 2"
+                                   Margin="0 0 5 0"
+                                   IsEnabled="{Binding ConversionHistory.Count}">
+                                JSON
+                            </Button>
+                            <Button Command="{Binding ExportHistoryToTextCommand}"
+                                   ToolTip.Tip="Export history to text file"
+                                   Padding="5 2"
+                                   Margin="0 0 5 0"
+                                   IsEnabled="{Binding ConversionHistory.Count}">
+                                TXT
+                            </Button>
+                            <Button Command="{Binding ClearHistoryCommand}"
+                                   ToolTip.Tip="Clear conversion history (Ctrl+H)"
+                                   Padding="5 2">
+                                Clear
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ScrollViewer MaxHeight="150" Margin="0 5 0 0">
+                        <ItemsControl ItemsSource="{Binding ConversionHistory}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="5" 
+                                           Margin="2" 
+                                           CornerRadius="4" 
+                                           Background="{DynamicResource HistoryItemBackgroundBrush}">
+                                        <TextBlock Text="{Binding}" 
+                                                  FontFamily="Consolas,Courier New,monospace"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBlock Text="No conversions yet" 
+                              Foreground="{DynamicResource SystemBaseMediumColor}"
+                              Margin="5"
+                              IsVisible="{Binding !ConversionHistory.Count}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Keyboard Shortcuts Help -->
+            <Border Margin="5"
+                    Padding="8" 
+                    CornerRadius="6" 
+                    Background="{DynamicResource InfoBackgroundBrush}">
+                <TextBlock TextWrapping="Wrap" 
+                          FontSize="11"
+                          HorizontalAlignment="Center">
+                    ⌨️ Shortcuts: Ctrl+C (Copy) • Ctrl+R (Clear) • Ctrl+H (Clear History) • Ctrl+S (Settings)
+                </TextBlock>
+            </Border>
+
+            <!-- Status Bar with Fade Animation -->
+            <Border Margin="5" 
+                    Padding="8" 
+                    CornerRadius="6" 
+                    Background="{DynamicResource SystemAccentColor}"
+                    IsVisible="{Binding IsStatusVisible}"
+                    Name="StatusBar">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+                    </Transitions>
+                </Border.Transitions>
+                <TextBlock Text="{Binding StatusMessage}" 
+                          FontSize="13"
+                          FontWeight="SemiBold"
+                          Foreground="White"
+                          HorizontalAlignment="Center"/>
+            </Border>
+
+            <!-- About/Info -->
+            <Border Margin="5" Padding="8" CornerRadius="6" Background="{DynamicResource InfoBackgroundBrush}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="Temperature Converter Pro v1.0.0" FontSize="11" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                    <Button Content="ℹ️ About" Padding="5 2" Click="About_Click" FontSize="11"/>
+                </StackPanel>
+            </Border>
+
+            </StackPanel></ScrollViewer>
+
+</Window>
+
+
+
