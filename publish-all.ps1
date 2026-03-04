@@ -50,7 +50,7 @@ foreach ($runtime in $runtimes) {
             --no-restore `
             --self-contained true `
             /p:PublishSingleFile=true `
-            /p:PublishTrimmed=false `
+            /p:PublishTrimmed=true `
             /p:IsPublishing=true
 
         if ($LASTEXITCODE -eq 0) {
