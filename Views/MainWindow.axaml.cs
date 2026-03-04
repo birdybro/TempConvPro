@@ -182,6 +182,18 @@ namespace TempConvPro.Views
             _ = aboutWindow.ShowDialog(this);
         }
 
+        private void Settings_Click(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainWindowViewModel vm)
+            {
+                var settingsWindow = new SettingsWindow
+                {
+                    DataContext = vm
+                };
+                _ = settingsWindow.ShowDialog(this);
+            }
+        }
+
         private async Task RestoreWindowStateAsync()
         {
             var settings = await _settingsService.LoadSettingsAsync();

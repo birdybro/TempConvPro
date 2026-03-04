@@ -1,0 +1,117 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TempConvPro.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="400"
+        x:Class="TempConvPro.Views.SettingsWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Settings - Temperature Converter Pro"
+        Width="450"
+        Height="400"
+        CanResize="false"
+        WindowStartupLocation="CenterOwner"
+        Icon="/Assets/avalonia-logo.ico">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="SectionBackgroundBrush" Color="{DynamicResource SystemAltMediumColor}" />
+    </Window.Resources>
+
+    <Border Padding="20">
+        <StackPanel Spacing="15">
+            <!-- Header -->
+            <TextBlock FontWeight="Bold" 
+                      FontSize="20" 
+                      HorizontalAlignment="Center"
+                      Margin="0 0 0 10">
+                ⚙️ Settings
+            </TextBlock>
+
+            <!-- Settings Options -->
+            <Border Padding="15" 
+                    CornerRadius="8" 
+                    Background="{DynamicResource SectionBackgroundBrush}">
+                <StackPanel Spacing="12">
+                    <TextBlock FontWeight="SemiBold" 
+                              FontSize="14" 
+                              Margin="0 0 0 5">
+                        Application Settings
+                    </TextBlock>
+
+                    <!-- Auto-save setting -->
+                    <CheckBox IsChecked="{Binding AutoSaveSettings}"
+                             ToolTip.Tip="Automatically save settings when changed">
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold">Auto-save settings</TextBlock>
+                            <TextBlock FontSize="11" 
+                                      Foreground="{DynamicResource SystemBaseMediumColor}"
+                                      TextWrapping="Wrap"
+                                      Margin="0 2 0 0">
+                                Automatically save temperature values when they change
+                            </TextBlock>
+                        </StackPanel>
+                    </CheckBox>
+
+                    <!-- Restore last values -->
+                    <CheckBox IsChecked="{Binding RestoreLastValues}"
+                             ToolTip.Tip="Restore last temperature values on startup">
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold">Restore last values on startup</TextBlock>
+                            <TextBlock FontSize="11" 
+                                      Foreground="{DynamicResource SystemBaseMediumColor}"
+                                      TextWrapping="Wrap"
+                                      Margin="0 2 0 0">
+                                Load the last temperature values when the app starts
+                            </TextBlock>
+                        </StackPanel>
+                    </CheckBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Action buttons -->
+            <Border Padding="15" 
+                    CornerRadius="8" 
+                    Background="{DynamicResource SectionBackgroundBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontWeight="SemiBold" 
+                              FontSize="14" 
+                              Margin="0 0 0 5">
+                        Actions
+                    </TextBlock>
+
+                    <Button HorizontalAlignment="Stretch"
+                           Command="{Binding SaveSettingsCommand}"
+                           ToolTip.Tip="Manually save current settings">
+                        💾 Save Settings Now
+                    </Button>
+
+                    <Button HorizontalAlignment="Stretch"
+                           Command="{Binding ResetSettingsCommand}"
+                           ToolTip.Tip="Reset all settings to defaults">
+                        🔄 Reset to Defaults
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Settings info -->
+            <TextBlock FontSize="11" 
+                      Foreground="{DynamicResource SystemBaseMediumColor}"
+                      TextWrapping="Wrap"
+                      TextAlignment="Center"
+                      Margin="0 5 0 0">
+                Settings are saved to your AppData folder and persist between sessions.
+                Window size and position are also remembered.
+            </TextBlock>
+
+            <!-- Spacer -->
+            <Panel Height="10" />
+
+            <!-- Close button -->
+            <Button HorizontalAlignment="Center"
+                   Padding="40,10"
+                   Name="CloseButton">
+                Close
+            </Button>
+        </StackPanel>
+    </Border>
+</Window>

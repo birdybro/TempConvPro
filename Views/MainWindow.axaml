@@ -24,7 +24,6 @@
         <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyToClipboardCommand}" />
         <KeyBinding Gesture="Ctrl+R" Command="{Binding ClearAllCommand}" />
         <KeyBinding Gesture="Ctrl+H" Command="{Binding ClearHistoryCommand}" />
-        <KeyBinding Gesture="Ctrl+S" Command="{Binding ToggleSettingsCommand}" />
     </Window.KeyBindings>
 
     <Window.Resources>
@@ -444,75 +443,12 @@
                                 ⭐ Save Preset
                             </Button>
                             <Button Margin="5" 
-                                   Command="{Binding ToggleSettingsCommand}"
-                                   ToolTip.Tip="Show/hide settings panel (Ctrl+S)">
+                                   Click="Settings_Click"
+                                   ToolTip.Tip="Open settings window">
                                 ⚙️ Settings
                             </Button>
                         </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Settings Panel (Collapsible with Animation) -->
-            <Border Margin="5" 
-                    Padding="10" 
-                    CornerRadius="8" 
-                    Background="{DynamicResource SectionBackgroundBrush}"
-                    IsVisible="{Binding ShowSettingsPanel}"
-                    Name="SettingsPanel">
-                <Border.Transitions>
-                    <Transitions>
-                        <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
-                    </Transitions>
-                </Border.Transitions>
-                <StackPanel>
-                    <TextBlock FontWeight="SemiBold" 
-                              FontSize="16" 
-                              Margin="0 0 0 10">
-                        ⚙️ Settings
-                    </TextBlock>
-
-                    <!-- Auto-save setting -->
-                    <CheckBox IsChecked="{Binding AutoSaveSettings}"
-                             Margin="0 5"
-                             ToolTip.Tip="Automatically save settings when changed">
-                        <TextBlock TextWrapping="Wrap">
-                            Auto-save settings
-                        </TextBlock>
-                    </CheckBox>
-
-                    <!-- Restore last values -->
-                    <CheckBox IsChecked="{Binding RestoreLastValues}"
-                             Margin="0 5"
-                             ToolTip.Tip="Restore last temperature values on startup">
-                        <TextBlock TextWrapping="Wrap">
-                            Restore last values on startup
-                        </TextBlock>
-                    </CheckBox>
-
-                    <!-- Action buttons -->
-                    <StackPanel Orientation="Horizontal" 
-                               HorizontalAlignment="Center" 
-                               Margin="0 10 0 0">
-                        <Button Margin="5" 
-                               Command="{Binding SaveSettingsCommand}"
-                               ToolTip.Tip="Manually save current settings">
-                            💾 Save Settings
-                        </Button>
-                        <Button Margin="5" 
-                               Command="{Binding ResetSettingsCommand}"
-                               ToolTip.Tip="Reset all settings to defaults">
-                            🔄 Reset to Defaults
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Settings info -->
-                    <TextBlock Margin="0 10 0 0" 
-                              FontSize="11" 
-                              Foreground="{DynamicResource SystemBaseMediumColor}"
-                              TextWrapping="Wrap">
-                        Settings are saved to your AppData folder and persist between sessions. Window size and position are also remembered.
-                    </TextBlock>
                 </StackPanel>
             </Border>
 
@@ -587,7 +523,7 @@
                 <TextBlock TextWrapping="Wrap" 
                           FontSize="11"
                           HorizontalAlignment="Center">
-                    ⌨️ Shortcuts: Ctrl+C (Copy) • Ctrl+R (Clear) • Ctrl+H (Clear History) • Ctrl+S (Settings)
+                    ⌨️ Shortcuts: Ctrl+C (Copy) • Ctrl+R (Clear) • Ctrl+H (Clear History)
                 </TextBlock>
             </Border>
 
