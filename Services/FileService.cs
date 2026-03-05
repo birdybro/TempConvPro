@@ -8,10 +8,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace TempConvPro.Services
 {
+    /// <summary>
+    /// JSON source generation context for export data
+    /// </summary>
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(ExportData))]
+    internal partial class ExportDataContext : JsonSerializerContext
+    {
+    }
+
+    /// <summary>
+    /// Export data model for JSON serialization
+    /// </summary>
+    public class ExportData
+    {
+        [JsonPropertyName("exportDate")]
+        public DateTime ExportDate { get; set; }
+
+        [JsonPropertyName("appName")]
+        public string AppName { get; set; } = string.Empty;
+
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = string.Empty;
+
+        [JsonPropertyName("conversions")]
+        public List<ConversionEntry> Conversions { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Individual conversion entry for export
+    /// </summary>
+    public class ConversionEntry
+    {
+        [JsonPropertyName("index")]
+        public int Index { get; set; }
+
+        [JsonPropertyName("conversion")]
+        public string Conversion { get; set; } = string.Empty;
+
+        [JsonPropertyName("timestamp")]
+        public DateTime Timestamp { get; set; }
+    }
+
     /// <summary>
     /// Service for file operations (export, import, etc.)
     /// Pure MVVM - ViewModel has no knowledge of file dialogs
@@ -140,25 +183,21 @@ namespace TempConvPro.Services
 
         public string ExportToJson(IEnumerable<string> items)
         {
-            var data = new
+            var timestamp = DateTime.Now;
+            var data = new ExportData
             {
-                ExportDate = DateTime.Now,
+                ExportDate = timestamp,
                 AppName = "Temperature Converter Pro",
                 Version = "1.0",
-                Conversions = items.Select((item, index) => new
+                Conversions = items.Select((item, index) => new ConversionEntry
                 {
                     Index = index + 1,
                     Conversion = item,
-                    Timestamp = DateTime.Now
-                })
+                    Timestamp = timestamp
+                }).ToList()
             };
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-
-            return JsonSerializer.Serialize(data, options);
+            return JsonSerializer.Serialize(data, ExportDataContext.Default.ExportData);
         }
 
         public string ExportToText(IEnumerable<string> items)

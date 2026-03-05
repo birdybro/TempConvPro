@@ -3,7 +3,7 @@
         x:Class="TempConvPro.Views.FormulasWindow"
         Title="Temperature Conversion Formulas"
         Width="600"
-        Height="700"
+        Height="900"
         CanResize="true"
         MinWidth="500"
         MinHeight="500"

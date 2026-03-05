@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using TempConvPro.ViewModels;
 using TempConvPro.Views;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TempConvPro
 {
@@ -35,6 +36,8 @@ namespace TempConvPro
             base.OnFrameworkInitializationCompleted();
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", 
+            Justification = "DataValidators are used by Avalonia's binding system and are preserved by the framework.")]
         private void DisableAvaloniaDataAnnotationValidation()
         {
             // Get an array of plugins to remove

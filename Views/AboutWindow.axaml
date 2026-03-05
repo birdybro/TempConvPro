@@ -1,0 +1,114 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TempConvPro.Views.AboutWindow"
+        Title="About Temperature Converter Pro"
+        Width="450"
+        Height="800"
+        CanResize="false"
+        WindowStartupLocation="CenterOwner"
+        Icon="/Assets/avalonia-logo.ico">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="SectionBackgroundBrush" Color="{DynamicResource SystemAltMediumColor}" />
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Padding="20">
+            <StackPanel Spacing="15">
+                <!-- Icon -->
+                <TextBlock Text="🌡️"
+                          FontSize="48"
+                          HorizontalAlignment="Center"
+                          Margin="0 0 0 10" />
+
+                <!-- Title -->
+                <TextBlock Text="Temperature Converter Pro"
+                          FontSize="24"
+                          FontWeight="Bold"
+                          HorizontalAlignment="Center" />
+
+                <!-- Version -->
+                <TextBlock Text="Version 1.0.0"
+                          FontSize="14"
+                          HorizontalAlignment="Center"
+                          Margin="0 5 0 5" />
+
+                <!-- Copyright -->
+                <TextBlock Text="© 2026 Kevin Coleman"
+                          FontSize="12"
+                          HorizontalAlignment="Center"
+                          Margin="0 0 0 20" />
+
+                <!-- Description -->
+                <TextBlock Text="A comprehensive temperature conversion tool supporting 8 temperature scales (4 modern + 4 historical) with advanced features."
+                          TextWrapping="Wrap"
+                          Margin="0 0 0 15" />
+
+                <!-- Features Section -->
+                <Border Padding="15" 
+                        CornerRadius="8" 
+                        Background="{DynamicResource SectionBackgroundBrush}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="✨ Features"
+                                  FontWeight="Bold"
+                                  FontSize="14" />
+                        <TextBlock FontFamily="Consolas,Courier New,monospace"
+                                  FontSize="11"
+                                  TextWrapping="Wrap">
+• 4 Modern Scales: Celsius, Fahrenheit, Kelvin, Rankine
+• 4 Historical Scales: Réaumur, Rømer, Newton, Delisle
+• Keyboard Shortcuts (Ctrl+C/R/H)
+• Custom Temperature Presets
+• Interactive Formulas Window
+• Export to CSV/JSON/TXT
+• Settings Persistence
+• Dark Mode Support
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Technology Stack -->
+                <Border Padding="15" 
+                        CornerRadius="8" 
+                        Background="{DynamicResource SectionBackgroundBrush}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="🛠️ Technology Stack"
+                                  FontWeight="Bold"
+                                  FontSize="14" />
+                        <TextBlock FontFamily="Consolas,Courier New,monospace"
+                                  FontSize="11"
+                                  TextWrapping="Wrap">
+• .NET 10
+• Avalonia UI 11.x
+• CommunityToolkit.Mvvm 8.x
+• Pure MVVM Architecture
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- License -->
+                <Border Padding="15" 
+                        CornerRadius="8" 
+                        Background="{DynamicResource SectionBackgroundBrush}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="📄 License"
+                                  FontWeight="Bold"
+                                  FontSize="14" />
+                        <TextBlock Text="MIT License - See LICENSE file for details."
+                                  FontSize="11" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Spacer -->
+                <Panel Height="10" />
+
+                <!-- Close button -->
+                <Button HorizontalAlignment="Center"
+                       Padding="40,10"
+                       Name="CloseButton">
+                    Close
+                </Button>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</Window>

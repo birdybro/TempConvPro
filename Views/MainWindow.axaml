@@ -13,7 +13,7 @@
         SizeToContent="Height"
         MinWidth="500"
         MinHeight="600"
-        MaxHeight="1200">
+        MaxHeight="950">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
