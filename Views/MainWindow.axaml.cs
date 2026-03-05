@@ -16,6 +16,16 @@ namespace TempConvPro.Views
     {
         private readonly IWindowStateService _windowStateService;
 
+        /// <summary>
+        /// Parameterless constructor for XAML designer and runtime loader
+        /// </summary>
+        public MainWindow() : this(new WindowStateService(new JsonSettingsService()))
+        {
+        }
+
+        /// <summary>
+        /// Constructor with dependency injection for production use
+        /// </summary>
         public MainWindow(IWindowStateService windowStateService)
         {
             InitializeComponent();
