@@ -28,12 +28,15 @@ namespace TempConvPro
                 // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 DisableAvaloniaDataAnnotationValidation();
 
-                // Create main window first
-                var mainWindow = new MainWindow();
-
-                // Initialize services
-                var clipboardService = new Services.ClipboardService();
+                // Initialize services (Dependency Injection setup)
                 var settingsService = new Services.JsonSettingsService();
+                var clipboardService = new Services.ClipboardService();
+                var windowStateService = new Services.WindowStateService(settingsService);
+
+                // Create main window with injected window state service
+                var mainWindow = new MainWindow(windowStateService);
+
+                // Create file service (needs window reference)
                 var fileService = new Services.AvaloniaFileService(mainWindow);
 
                 // Create ViewModel with all dependencies

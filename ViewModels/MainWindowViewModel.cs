@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Kevin Coleman
+// Copyright (c) 2026 Kevin Coleman
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +19,7 @@ namespace TempConvPro.ViewModels
         private const double AbsoluteZeroCelsius = -273.15;
         private readonly IClipboardService _clipboardService;
         private readonly ISettingsService _settingsService;
-        private IFileService? _fileService;
+        private readonly IFileService _fileService;
         private bool _isLoadingSettings = false;
         private CancellationTokenSource? _statusMessageCancellation;
         private CancellationTokenSource? _autoSaveCancellation;
@@ -63,9 +63,6 @@ namespace TempConvPro.ViewModels
         private bool _restoreLastValues = true;
 
         [ObservableProperty]
-        private bool _showSettingsPanel = false;
-
-        [ObservableProperty]
         private string _statusMessage = "Ready";
 
         [ObservableProperty]
@@ -73,12 +70,6 @@ namespace TempConvPro.ViewModels
 
         [ObservableProperty]
         private TemperaturePreset? _selectedPreset;
-
-        [ObservableProperty]
-        private bool _showFormulaPanel = false;
-
-        [ObservableProperty]
-        private string _formulaDisplay = string.Empty;
 
         [ObservableProperty]
         private bool _showHistoricalScales = false;
@@ -90,11 +81,7 @@ namespace TempConvPro.ViewModels
 
         public ObservableCollection<TemperaturePreset> TemperaturePresets { get; } = new();
 
-        public MainWindowViewModel() : this(new ClipboardService(), new JsonSettingsService(), null)
-        {
-        }
-
-        public MainWindowViewModel(IClipboardService clipboardService, ISettingsService settingsService, IFileService? fileService)
+        public MainWindowViewModel(IClipboardService clipboardService, ISettingsService settingsService, IFileService fileService)
         {
             _clipboardService = clipboardService;
             _settingsService = settingsService;
@@ -235,14 +222,6 @@ namespace TempConvPro.ViewModels
             }
         }
 
-        partial void OnShowFormulaPanelChanged(bool value)
-        {
-            if (value)
-            {
-                UpdateFormulaDisplay();
-            }
-        }
-
         // Suppress warnings - must use backing fields to prevent infinite loops
         #pragma warning disable MVVMTK0034
         private void UpdateFromCelsius(double c)
@@ -275,7 +254,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-            UpdateFormulaDisplay();
+
         }
 
         private void UpdateFromFahrenheit(double f)
@@ -308,7 +287,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-            UpdateFormulaDisplay();
+
         }
 
         private void UpdateFromKelvin(double k)
@@ -341,7 +320,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-            UpdateFormulaDisplay();
+
         }
 
         private void UpdateFromRankine(double r)
@@ -374,7 +353,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-            UpdateFormulaDisplay();
+
         }
 
         private void UpdateFromReaumur(double re)
@@ -405,7 +384,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-            UpdateFormulaDisplay();
+
         }
 
         private void UpdateFromRomer(double ro)
@@ -436,7 +415,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-            UpdateFormulaDisplay();
+
         }
 
         private void UpdateFromNewton(double n)
@@ -467,7 +446,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-            UpdateFormulaDisplay();
+
         }
 
         private void UpdateFromDelisle(double de)
@@ -498,7 +477,7 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Newton));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-            UpdateFormulaDisplay();
+
         }
         #pragma warning restore MVVMTK0034
 
@@ -549,12 +528,6 @@ namespace TempConvPro.ViewModels
         }
 
         [RelayCommand]
-        private void ToggleFormula()
-        {
-            ShowFormulaPanel = !ShowFormulaPanel;
-        }
-
-        [RelayCommand]
         private async Task SaveAsCustomPreset()
         {
             if (!double.TryParse(Celsius, NumberStyles.Float, CultureInfo.InvariantCulture, out double c))
@@ -572,38 +545,6 @@ namespace TempConvPro.ViewModels
             TemperaturePresets.Add(preset);
             await SaveCustomPresetsAsync();
             ShowStatusMessage($"⭐ Saved as custom preset", 3);
-        }
-
-        private void UpdateFormulaDisplay()
-        {
-            if (!ShowFormulaPanel)
-                return;
-
-            if (!double.TryParse(Celsius, NumberStyles.Float, CultureInfo.InvariantCulture, out double c))
-            {
-                FormulaDisplay = "Enter a valid temperature to see the conversion formulas.";
-                return;
-            }
-
-            var f = c * (9.0 / 5.0) + 32;
-            var k = c + 273.15;
-            var r = (c + 273.15) * (9.0 / 5.0);
-
-            var precision = DecimalPlaces;
-
-            FormulaDisplay = $"Converting from {c.ToString($"F{precision}")}°C:\n\n" +
-                           $"Celsius to Fahrenheit:\n" +
-                           $"  F = C × (9/5) + 32\n" +
-                           $"  F = {c.ToString($"F{precision}")} × 1.8 + 32\n" +
-                           $"  F = {f.ToString($"F{precision}")}°F\n\n" +
-                           $"Celsius to Kelvin:\n" +
-                           $"  K = C + 273.15\n" +
-                           $"  K = {c.ToString($"F{precision}")} + 273.15\n" +
-                           $"  K = {k.ToString($"F{precision}")}K\n\n" +
-                           $"Celsius to Rankine:\n" +
-                           $"  °R = (C + 273.15) × (9/5)\n" +
-                           $"  °R = ({c.ToString($"F{precision}")} + 273.15) × 1.8\n" +
-                           $"  °R = {r.ToString($"F{precision}")}°R";
         }
 
         private async Task SaveCustomPresetsAsync()
@@ -631,13 +572,6 @@ namespace TempConvPro.ViewModels
                 await _clipboardService.SetTextAsync(text);
                 ShowStatusMessage("📋 Copied to clipboard!", 3);
             }
-        }
-
-        [RelayCommand]
-        private void ToggleSettings()
-        {
-            ShowSettingsPanel = !ShowSettingsPanel;
-            ShowStatusMessage(ShowSettingsPanel ? "Settings opened" : "Settings closed", 2);
         }
 
         [RelayCommand]
@@ -673,7 +607,7 @@ namespace TempConvPro.ViewModels
         [RelayCommand]
         private async Task ExportHistoryToCsv()
         {
-            if (_fileService == null || !ConversionHistory.Any())
+            if (!ConversionHistory.Any())
             {
                 ShowStatusMessage("No history to export", 2);
                 return;
@@ -691,7 +625,7 @@ namespace TempConvPro.ViewModels
         [RelayCommand]
         private async Task ExportHistoryToJson()
         {
-            if (_fileService == null || !ConversionHistory.Any())
+            if (!ConversionHistory.Any())
             {
                 ShowStatusMessage("No history to export", 2);
                 return;
@@ -709,7 +643,7 @@ namespace TempConvPro.ViewModels
         [RelayCommand]
         private async Task ExportHistoryToText()
         {
-            if (_fileService == null || !ConversionHistory.Any())
+            if (!ConversionHistory.Any())
             {
                 ShowStatusMessage("No history to export", 2);
                 return;

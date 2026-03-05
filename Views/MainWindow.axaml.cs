@@ -16,10 +16,10 @@ namespace TempConvPro.Views
     {
         private readonly IWindowStateService _windowStateService;
 
-        public MainWindow()
+        public MainWindow(IWindowStateService windowStateService)
         {
             InitializeComponent();
-            _windowStateService = new WindowStateService(new JsonSettingsService());
+            _windowStateService = windowStateService;
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
         }
