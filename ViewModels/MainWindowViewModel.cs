@@ -90,20 +90,16 @@ namespace TempConvPro.ViewModels
 
         public ObservableCollection<TemperaturePreset> TemperaturePresets { get; } = new();
 
-        public MainWindowViewModel() : this(new ClipboardService(), new JsonSettingsService())
+        public MainWindowViewModel() : this(new ClipboardService(), new JsonSettingsService(), null)
         {
         }
 
-        public MainWindowViewModel(IClipboardService clipboardService, ISettingsService settingsService)
+        public MainWindowViewModel(IClipboardService clipboardService, ISettingsService settingsService, IFileService? fileService)
         {
             _clipboardService = clipboardService;
             _settingsService = settingsService;
-            InitializePresets();
-        }
-
-        public void SetFileService(IFileService fileService)
-        {
             _fileService = fileService;
+            InitializePresets();
         }
 
         private void InitializePresets()

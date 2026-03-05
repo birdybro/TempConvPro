@@ -27,10 +27,21 @@ namespace TempConvPro
                 // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
                 // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 DisableAvaloniaDataAnnotationValidation();
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowViewModel(),
-                };
+
+                // Create main window first
+                var mainWindow = new MainWindow();
+
+                // Initialize services
+                var clipboardService = new Services.ClipboardService();
+                var settingsService = new Services.JsonSettingsService();
+                var fileService = new Services.AvaloniaFileService(mainWindow);
+
+                // Create ViewModel with all dependencies
+                var viewModel = new MainWindowViewModel(clipboardService, settingsService, fileService);
+
+                // Set DataContext and assign window
+                mainWindow.DataContext = viewModel;
+                desktop.MainWindow = mainWindow;
             }
 
             base.OnFrameworkInitializationCompleted();

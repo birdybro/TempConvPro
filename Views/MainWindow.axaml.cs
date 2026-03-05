@@ -14,24 +14,21 @@ namespace TempConvPro.Views
 {
     public partial class MainWindow : Window
     {
-        private readonly ISettingsService _settingsService;
+        private readonly IWindowStateService _windowStateService;
 
         public MainWindow()
         {
             InitializeComponent();
-            _settingsService = new JsonSettingsService();
+            _windowStateService = new WindowStateService(new JsonSettingsService());
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
         }
 
         private async void MainWindow_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            // Load settings
+            // Initialize ViewModel
             if (DataContext is MainWindowViewModel vm)
             {
-                // Inject file service
-                vm.SetFileService(new AvaloniaFileService(this));
-
                 await vm.InitializeAsync();
             }
 
@@ -77,32 +74,32 @@ namespace TempConvPro.Views
 
         private async Task RestoreWindowStateAsync()
         {
-            var settings = await _settingsService.LoadSettingsAsync();
+            var state = await _windowStateService.LoadWindowStateAsync();
 
             // Restore size
-            Width = settings.WindowWidth;
-            Height = settings.WindowHeight;
+            Width = state.Width;
+            Height = state.Height;
 
             // Restore position if saved
-            if (settings.WindowX.HasValue && settings.WindowY.HasValue)
+            if (state.X.HasValue && state.Y.HasValue)
             {
                 Position = new Avalonia.PixelPoint(
-                    (int)settings.WindowX.Value,
-                    (int)settings.WindowY.Value);
+                    (int)state.X.Value,
+                    (int)state.Y.Value);
             }
         }
 
         private async Task SaveWindowStateAsync()
         {
-            var settings = await _settingsService.LoadSettingsAsync();
+            var state = new WindowStateInfo
+            {
+                Width = Width,
+                Height = Height,
+                X = Position.X,
+                Y = Position.Y
+            };
 
-            // Save current size and position
-            settings.WindowWidth = Width;
-            settings.WindowHeight = Height;
-            settings.WindowX = Position.X;
-            settings.WindowY = Position.Y;
-
-            await _settingsService.SaveSettingsAsync(settings);
+            await _windowStateService.SaveWindowStateAsync(state);
         }
     }
 }
