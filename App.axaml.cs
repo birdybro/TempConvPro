@@ -10,11 +10,15 @@ using TempConvPro.ViewModels;
 using TempConvPro.Views;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
+using TempConvPro.Services;
 
 namespace TempConvPro
 {
     public partial class App : Application
     {
+        private ServiceProvider? _serviceProvider;
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -28,23 +32,25 @@ namespace TempConvPro
                 // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 DisableAvaloniaDataAnnotationValidation();
 
-                // Initialize services (Dependency Injection setup)
-                var settingsService = new Services.JsonSettingsService();
-                var clipboardService = new Services.ClipboardService();
-                var windowStateService = new Services.WindowStateService(settingsService);
-
-                // Create main window with injected window state service
+                // Create main window first (needed for FileService registration)
+                var windowStateService = new WindowStateService(new JsonSettingsService());
                 var mainWindow = new MainWindow(windowStateService);
 
-                // Create file service (needs window reference)
-                var fileService = new Services.AvaloniaFileService(mainWindow);
+                // Configure dependency injection container
+                _serviceProvider = ServiceConfiguration.ConfigureServices(mainWindow);
 
-                // Create ViewModel with all dependencies
-                var viewModel = new MainWindowViewModel(clipboardService, settingsService, fileService);
+                // Resolve ViewModel from DI container
+                var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
 
                 // Set DataContext and assign window
                 mainWindow.DataContext = viewModel;
                 desktop.MainWindow = mainWindow;
+
+                // Handle application shutdown to dispose services
+                desktop.ShutdownRequested += (s, e) =>
+                {
+                    _serviceProvider?.Dispose();
+                };
             }
 
             base.OnFrameworkInitializationCompleted();
