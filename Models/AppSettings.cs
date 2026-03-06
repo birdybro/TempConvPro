@@ -85,5 +85,11 @@ namespace TempConvPro.Models
         /// </summary>
         [JsonPropertyName("restoreLastValues")]
         public bool RestoreLastValues { get; set; } = true;
+
+        /// <summary>
+        /// Number of decimal places to display (0-8)
+        /// </summary>
+        [JsonPropertyName("decimalPlaces")]
+        public int DecimalPlaces { get; set; } = 2;
     }
 }

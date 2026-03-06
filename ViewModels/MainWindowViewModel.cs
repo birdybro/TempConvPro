@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using TempConvPro.Models;
 using TempConvPro.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -16,18 +17,18 @@ namespace TempConvPro.ViewModels
 {
     public partial class MainWindowViewModel : ViewModelBase, IAsyncDisposable
     {
-        // Conversion constants to eliminate magic numbers
-        private const double AbsoluteZeroCelsius = -273.15;
-        private const double CelsiusToKelvinOffset = 273.15;
-        private const double CelsiusToFahrenheitFactor = 9d / 5d;
-        private const double FahrenheitOffset = 32;
-        private const double FahrenheitToRankineOffset = 459.67;
-        private const double CelsiusToReaumurFactor = 4d / 5d;
-        private const double CelsiusToRomerFactor = 21d / 40d;
-        private const double RomerOffset = 7.5;
-        private const double CelsiusToNewtonFactor = 33d / 100d;
-        private const double DelisleBase = 100d;
-        private const double CelsiusToDelisleFactor = 3d / 2d;
+        // Use shared conversion constants for consistency across the application
+        private const double AbsoluteZeroCelsius = TemperatureConstants.AbsoluteZeroCelsius;
+        private const double CelsiusToKelvinOffset = TemperatureConstants.CelsiusToKelvinOffset;
+        private const double CelsiusToFahrenheitFactor = TemperatureConstants.CelsiusToFahrenheitFactor;
+        private const double FahrenheitOffset = TemperatureConstants.FahrenheitOffset;
+        private const double FahrenheitToRankineOffset = TemperatureConstants.FahrenheitToRankineOffset;
+        private const double CelsiusToReaumurFactor = TemperatureConstants.CelsiusToReaumurFactor;
+        private const double CelsiusToRomerFactor = TemperatureConstants.CelsiusToRomerFactor;
+        private const double RomerOffset = TemperatureConstants.RomerOffset;
+        private const double CelsiusToNewtonFactor = TemperatureConstants.CelsiusToNewtonFactor;
+        private const double DelisleBase = TemperatureConstants.DelisleBase;
+        private const double CelsiusToDelisleFactor = TemperatureConstants.CelsiusToDelisleFactor;
 
         private readonly IClipboardService _clipboardService;
         private readonly ISettingsService _settingsService;
@@ -35,6 +36,7 @@ namespace TempConvPro.ViewModels
         private bool _isLoadingSettings = false;
         private CancellationTokenSource? _statusMessageCancellation;
         private CancellationTokenSource? _autoSaveCancellation;
+        private int _maxHistoryEntries = 10; // Cached from settings
 
         [ObservableProperty]
         private string _celsius = "0";
@@ -85,8 +87,8 @@ namespace TempConvPro.ViewModels
         [ObservableProperty]
         private bool _showHistoricalScales = false;
 
-        // Fixed decimal places - always show 2 decimal places
-        private int DecimalPlaces => 2;
+        [ObservableProperty]
+        private int _decimalPlaces = 2;
 
         public ObservableCollection<string> ConversionHistory { get; } = new();
 
@@ -298,9 +300,11 @@ namespace TempConvPro.ViewModels
         private void AddToHistory(string conversion)
         {
             ConversionHistory.Insert(0, conversion);
-            if (ConversionHistory.Count > 10)
+
+            // Use configured max history entries (cached from settings)
+            if (ConversionHistory.Count > _maxHistoryEntries)
             {
-                ConversionHistory.RemoveAt(10);
+                ConversionHistory.RemoveAt(_maxHistoryEntries);
             }
         }
 
@@ -402,41 +406,44 @@ namespace TempConvPro.ViewModels
         [RelayCommand]
         private async Task ExportHistoryToCsv()
         {
-            if (!ConversionHistory.Any())
-            {
-                ShowStatusMessage("No history to export", 2);
-                return;
-            }
-
-            var content = _fileService.ExportToCsv(ConversionHistory);
-            var success = await _fileService.ExportToFileAsync(content, "temperature_history.csv", FileExportFormat.Csv);
-
-            if (success)
-                ShowStatusMessage("📄 Exported to CSV!", 3);
-            else
-                ShowStatusMessage("Export cancelled", 2);
+            await ExportHistoryAsync(
+                h => _fileService.ExportToCsv(h),
+                "temperature_history.csv",
+                FileExportFormat.Csv,
+                "📄 Exported to CSV!"
+            );
         }
 
         [RelayCommand]
         private async Task ExportHistoryToJson()
         {
-            if (!ConversionHistory.Any())
-            {
-                ShowStatusMessage("No history to export", 2);
-                return;
-            }
-
-            var content = _fileService.ExportToJson(ConversionHistory);
-            var success = await _fileService.ExportToFileAsync(content, "temperature_history.json", FileExportFormat.Json);
-
-            if (success)
-                ShowStatusMessage("📋 Exported to JSON!", 3);
-            else
-                ShowStatusMessage("Export cancelled", 2);
+            await ExportHistoryAsync(
+                h => _fileService.ExportToJson(h),
+                "temperature_history.json",
+                FileExportFormat.Json,
+                "📋 Exported to JSON!"
+            );
         }
 
         [RelayCommand]
         private async Task ExportHistoryToText()
+        {
+            await ExportHistoryAsync(
+                h => _fileService.ExportToText(h),
+                "temperature_history.txt",
+                FileExportFormat.Text,
+                "📝 Exported to TXT!"
+            );
+        }
+
+        /// <summary>
+        /// Consolidated export logic to eliminate duplication across export methods
+        /// </summary>
+        private async Task ExportHistoryAsync(
+            Func<IEnumerable<string>, string> exportFunc,
+            string defaultFileName,
+            FileExportFormat format,
+            string successMessage)
         {
             if (!ConversionHistory.Any())
             {
@@ -444,11 +451,11 @@ namespace TempConvPro.ViewModels
                 return;
             }
 
-            var content = _fileService.ExportToText(ConversionHistory);
-            var success = await _fileService.ExportToFileAsync(content, "temperature_history.txt", FileExportFormat.Text);
+            var content = exportFunc(ConversionHistory);
+            var success = await _fileService.ExportToFileAsync(content, defaultFileName, format);
 
             if (success)
-                ShowStatusMessage("📝 Exported to TXT!", 3);
+                ShowStatusMessage(successMessage, 3);
             else
                 ShowStatusMessage("Export cancelled", 2);
         }
@@ -494,6 +501,8 @@ namespace TempConvPro.ViewModels
                 // Apply settings
                 AutoSaveSettings = settings.AutoSave;
                 RestoreLastValues = settings.RestoreLastValues;
+                _decimalPlaces = Math.Max(0, Math.Min(8, settings.DecimalPlaces)); // Clamp to 0-8
+                _maxHistoryEntries = Math.Max(1, Math.Min(100, settings.MaxHistoryEntries)); // Clamp to 1-100
 
                 if (settings.RestoreLastValues)
                 {
@@ -521,7 +530,9 @@ namespace TempConvPro.ViewModels
                     LastFahrenheit = Fahrenheit,
                     LastKelvin = Kelvin,
                     AutoSave = AutoSaveSettings,
-                    RestoreLastValues = RestoreLastValues
+                    RestoreLastValues = RestoreLastValues,
+                    DecimalPlaces = _decimalPlaces,
+                    MaxHistoryEntries = _maxHistoryEntries
                 };
 
                 var success = await _settingsService.SaveSettingsAsync(settings);
@@ -549,6 +560,20 @@ namespace TempConvPro.ViewModels
 
         partial void OnRestoreLastValuesChanged(bool value)
         {
+            if (AutoSaveSettings && !_isLoadingSettings)
+            {
+                _ = SaveCurrentSettingsAsync();
+            }
+        }
+
+        partial void OnDecimalPlacesChanged(int oldValue, int newValue)
+        {
+            // Re-trigger conversion to update display with new precision
+            if (!_isLoadingSettings && double.TryParse(Celsius, NumberStyles.Float, CultureInfo.InvariantCulture, out double c))
+            {
+                UpdateAllScalesFromCelsius(c);
+            }
+
             if (AutoSaveSettings && !_isLoadingSettings)
             {
                 _ = SaveCurrentSettingsAsync();

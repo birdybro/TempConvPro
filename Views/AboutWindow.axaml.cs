@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 
 namespace TempConvPro.Views
 {
@@ -11,13 +10,6 @@ namespace TempConvPro.Views
         public AboutWindow()
         {
             InitializeComponent();
-
-            // Wire up close button
-            var closeButton = this.FindControl<Button>("CloseButton");
-            if (closeButton != null)
-            {
-                closeButton.Click += (s, e) => Close();
-            }
         }
     }
 }

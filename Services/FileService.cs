@@ -165,17 +165,17 @@ namespace TempConvPro.Services
         public string ExportToCsv(IEnumerable<string> items, string header = "Conversion")
         {
             var sb = new StringBuilder();
-            
-            // Header
-            sb.AppendLine($"{header},Timestamp");
 
-            // Data rows
-            var timestamp = DateTime.Now;
+            // Header
+            sb.AppendLine($"{header},ExportTime");
+
+            // Data rows - all conversions get same export timestamp since we don't track individual conversion times
+            var exportTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             foreach (var item in items)
             {
                 // Escape quotes in CSV
                 var escaped = item.Replace("\"", "\"\"");
-                sb.AppendLine($"\"{escaped}\",\"{timestamp:yyyy-MM-dd HH:mm:ss}\"");
+                sb.AppendLine($"\"{escaped}\",\"{exportTime}\"");
             }
 
             return sb.ToString();

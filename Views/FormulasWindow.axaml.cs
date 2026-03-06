@@ -3,6 +3,7 @@
 
 using Avalonia.Controls;
 using Avalonia.Input;
+using System;
 using System.Diagnostics;
 
 namespace TempConvPro.Views
@@ -24,9 +25,13 @@ namespace TempConvPro.Views
                     UseShellExecute = true
                 });
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail if browser can't be opened
+                // Log the error for debugging
+                Debug.WriteLine($"Failed to open Wikipedia URL '{url}': {ex.Message}");
+
+                // Could show a user-friendly message here if desired
+                // For now, silently fail as the formulas are still visible
             }
         }
 

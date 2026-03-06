@@ -25,19 +25,19 @@ namespace TempConvPro.Models
         public double Celsius { get; set; }
 
         /// <summary>
-        /// Fahrenheit value (calculated)
+        /// Fahrenheit value (calculated using shared constants)
         /// </summary>
-        public double Fahrenheit => Celsius * (9.0 / 5.0) + 32;
+        public double Fahrenheit => Celsius * TemperatureConstants.CelsiusToFahrenheitFactor + TemperatureConstants.FahrenheitOffset;
 
         /// <summary>
-        /// Kelvin value (calculated)
+        /// Kelvin value (calculated using shared constants)
         /// </summary>
-        public double Kelvin => Celsius + 273.15;
+        public double Kelvin => Celsius + TemperatureConstants.CelsiusToKelvinOffset;
 
         /// <summary>
-        /// Rankine value (calculated)
+        /// Rankine value (calculated using shared constants)
         /// </summary>
-        public double Rankine => (Celsius + 273.15) * (9.0 / 5.0);
+        public double Rankine => (Celsius + TemperatureConstants.CelsiusToKelvinOffset) * TemperatureConstants.CelsiusToFahrenheitFactor;
 
         /// <summary>
         /// Optional description
