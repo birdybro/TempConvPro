@@ -523,9 +523,8 @@ namespace TempConvPro.ViewModels
                 AutoSaveSettings = settings.AutoSave;
                 RestoreLastValues = settings.RestoreLastValues;
 
-                // Set backing fields directly during load to avoid triggering property change handlers
-                _decimalPlaces = Math.Max(0, Math.Min(8, settings.DecimalPlaces)); // Clamp to 0-8
-                OnPropertyChanged(nameof(DecimalPlaces)); // Manually notify after setting backing field
+                // Clamp and set decimal places (using property to avoid MVVM Toolkit warning)
+                DecimalPlaces = Math.Max(0, Math.Min(8, settings.DecimalPlaces));
 
                 _maxHistoryEntries = Math.Max(1, Math.Min(100, settings.MaxHistoryEntries)); // Clamp to 1-100
 
