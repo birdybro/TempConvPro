@@ -98,16 +98,6 @@
                                   FontSize="11" />
                     </StackPanel>
                 </Border>
-
-                <!-- Spacer -->
-                <Panel Height="10" />
-
-                <!-- Close button -->
-                <Button HorizontalAlignment="Center"
-                       Padding="40,10"
-                       Name="CloseButton">
-                    Close
-                </Button>
             </StackPanel>
         </Border>
     </ScrollViewer>
