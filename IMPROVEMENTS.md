@@ -180,3 +180,18 @@ All `OnXxxChanged` methods now convert their input to Celsius before calling `Up
 
 Generated: 2026-01-XX
 Applied By: GitHub Copilot
+
+
+## 🟡 **Medium-Priority Improvements Implemented**
+
+See IMPROVEMENTS_SUMMARY.md for complete details of all medium-priority fixes.
+
+Key medium-priority improvements:
+- ✅ History limit now configurable via AppSettings
+- ✅ Shared TemperatureConstants class eliminates duplication
+- ✅ Improved exception handling with logging
+- ✅ Consolidated export validation (67% code reduction)
+- ✅ Fixed CSV export timestamps
+- ✅ DecimalPlaces fully configurable (0-8 range)
+- ✅ Removed duplicate close button code
+- ✅ Resolved all MVVM Toolkit warnings
