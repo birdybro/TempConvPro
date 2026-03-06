@@ -94,6 +94,19 @@ namespace TempConvPro.ViewModels
 
         public ObservableCollection<TemperaturePreset> TemperaturePresets { get; } = new();
 
+        /// <summary>
+        /// Parameterless constructor for design-time support (Avalonia previewer)
+        /// </summary>
+        public MainWindowViewModel() : this(
+            new ClipboardService(), 
+            new JsonSettingsService(), 
+            new AvaloniaFileService(null))
+        {
+        }
+
+        /// <summary>
+        /// Constructor with dependency injection for runtime use
+        /// </summary>
         public MainWindowViewModel(IClipboardService clipboardService, ISettingsService settingsService, IFileService fileService)
         {
             _clipboardService = clipboardService;
