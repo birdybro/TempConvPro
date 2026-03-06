@@ -330,20 +330,41 @@ namespace TempConvPro.ViewModels
         private async Task SaveAsCustomPreset()
         {
             if (!double.TryParse(Celsius, NumberStyles.Float, CultureInfo.InvariantCulture, out double c))
+            {
+                ShowStatusMessage("⚠️ Invalid temperature value", 3);
                 return;
+            }
+
+            // Check for duplicate preset name
+            var presetName = $"Custom {c}°C";
+            var existingPreset = TemperaturePresets.FirstOrDefault(p => p.Name == presetName);
+
+            if (existingPreset != null)
+            {
+                ShowStatusMessage($"⚠️ Preset '{presetName}' already exists", 3);
+                return;
+            }
+
+            // Limit number of custom presets to prevent UI clutter
+            var customPresetsCount = TemperaturePresets.Count(p => p.IsCustom);
+            if (customPresetsCount >= 10)
+            {
+                ShowStatusMessage("⚠️ Maximum 10 custom presets allowed", 3);
+                return;
+            }
 
             var preset = new TemperaturePreset
             {
-                Name = $"Custom {c}°C",
+                Name = presetName,
                 Icon = "⭐",
                 Celsius = c,
-                Description = "User-created preset",
+                Description = $"User-created preset at {c}°C",
                 IsCustom = true
             };
 
             TemperaturePresets.Add(preset);
             await SaveCustomPresetsAsync();
-            ShowStatusMessage($"⭐ Saved as custom preset", 3);
+            ShowStatusMessage($"⭐ Saved preset '{presetName}'", 3);
         }
 
         private async Task SaveCustomPresetsAsync()

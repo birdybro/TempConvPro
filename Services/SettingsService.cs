@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using TempConvPro.Models;
 
@@ -18,17 +19,17 @@ namespace TempConvPro.Services
         /// <summary>
         /// Load settings from storage
         /// </summary>
-        Task<AppSettings> LoadSettingsAsync();
+        Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Save settings to storage
         /// </summary>
-        Task<bool> SaveSettingsAsync(AppSettings settings);
+        Task<bool> SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Reset to default settings
         /// </summary>
-        Task ResetSettingsAsync();
+        Task ResetSettingsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get the settings file path
@@ -58,7 +59,7 @@ namespace TempConvPro.Services
             Directory.CreateDirectory(_settingsDirectory);
         }
 
-        public async Task<AppSettings> LoadSettingsAsync()
+        public async Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -68,10 +69,15 @@ namespace TempConvPro.Services
                     return new AppSettings();
                 }
 
-                var json = await File.ReadAllTextAsync(_settingsFilePath);
+                var json = await File.ReadAllTextAsync(_settingsFilePath, cancellationToken);
                 var settings = JsonSerializer.Deserialize(json, AppSettingsContext.Default.AppSettings);
 
                 return settings ?? new AppSettings();
+            }
+            catch (OperationCanceledException)
+            {
+                // Operation was cancelled - return defaults
+                return new AppSettings();
             }
             catch (Exception ex)
             {
@@ -81,7 +87,7 @@ namespace TempConvPro.Services
             }
         }
 
-        public async Task<bool> SaveSettingsAsync(AppSettings settings)
+        public async Task<bool> SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -92,7 +98,7 @@ namespace TempConvPro.Services
 
                 // Write to temp file first, then move (atomic operation)
                 var tempFile = _settingsFilePath + ".tmp";
-                await File.WriteAllTextAsync(tempFile, json);
+                await File.WriteAllTextAsync(tempFile, json, cancellationToken);
 
                 if (File.Exists(_settingsFilePath))
                 {
@@ -103,6 +109,12 @@ namespace TempConvPro.Services
 
                 System.Diagnostics.Debug.WriteLine($"Settings saved successfully to: {_settingsFilePath}");
                 return true;
+            }
+            catch (OperationCanceledException)
+            {
+                // Operation was cancelled
+                System.Diagnostics.Debug.WriteLine("Settings save cancelled");
+                return false;
             }
             catch (Exception ex)
             {
@@ -116,7 +128,7 @@ namespace TempConvPro.Services
                 {
                     var errorLogPath = Path.Combine(_settingsDirectory, "error.log");
                     await File.AppendAllTextAsync(errorLogPath, 
-                        $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Save error: {ex}\n");
+                        $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Save error: {ex}\n", cancellationToken);
                 }
                 catch { /* Ignore if we can't write the error log */ }
 
@@ -124,7 +136,7 @@ namespace TempConvPro.Services
             }
         }
 
-        public async Task ResetSettingsAsync()
+        public async Task ResetSettingsAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -134,7 +146,11 @@ namespace TempConvPro.Services
                 }
 
                 // Save default settings
-                await SaveSettingsAsync(new AppSettings());
+                await SaveSettingsAsync(new AppSettings(), cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                System.Diagnostics.Debug.WriteLine("Settings reset cancelled");
             }
             catch (Exception ex)
             {

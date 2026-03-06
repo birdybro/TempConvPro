@@ -394,18 +394,18 @@
                                    Margin="0 0 0 5">
                             <Button Margin="5" 
                                    Command="{Binding ClearAllCommand}"
-                                   ToolTip.Tip="Reset all values to default (Ctrl+R)">
-                                🗑️ Clear All
+                                   ToolTip.Tip="Reset all values to default (Ctrl+R or Alt+L)">
+                                🗑️ C_lear All
                             </Button>
                             <Button Margin="5" 
                                    Command="{Binding CopyToClipboardCommand}"
-                                   ToolTip.Tip="Copy current conversion to clipboard (Ctrl+C)">
-                                📋 Copy Result
+                                   ToolTip.Tip="Copy current conversion to clipboard (Ctrl+C or Alt+O)">
+                                📋 C_opy Result
                             </Button>
                             <Button Margin="5" 
                                    Click="Formulas_Click"
-                                   ToolTip.Tip="Open formulas window">
-                                🧮 Formulas
+                                   ToolTip.Tip="Open formulas window (Alt+F)">
+                                🧮 _Formulas
                             </Button>
                         </StackPanel>
 
@@ -414,13 +414,13 @@
                                    HorizontalAlignment="Center">
                             <Button Margin="5" 
                                    Command="{Binding SaveAsCustomPresetCommand}"
-                                   ToolTip.Tip="Save current temperature as a custom preset">
-                                ⭐ Save Preset
+                                   ToolTip.Tip="Save current temperature as a custom preset (Alt+S)">
+                                ⭐ _Save Preset
                             </Button>
-                            <Button Margin="5" 
+                            <Button Margin="5"
                                    Click="Settings_Click"
-                                   ToolTip.Tip="Open settings window">
-                                ⚙️ Settings
+                                   ToolTip.Tip="Open settings window (Alt+T)">
+                                ⚙️ Se_ttings
                             </Button>
                         </StackPanel>
                     </StackPanel>
@@ -439,30 +439,30 @@
                         </TextBlock>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Command="{Binding ExportHistoryToCsvCommand}"
-                                   ToolTip.Tip="Export history to CSV file"
+                                   ToolTip.Tip="Export history to CSV file (Alt+C)"
                                    Padding="5 2"
                                    Margin="0 0 5 0"
                                    IsEnabled="{Binding ConversionHistory.Count}">
-                                CSV
+                                _CSV
                             </Button>
                             <Button Command="{Binding ExportHistoryToJsonCommand}"
-                                   ToolTip.Tip="Export history to JSON file"
+                                   ToolTip.Tip="Export history to JSON file (Alt+J)"
                                    Padding="5 2"
                                    Margin="0 0 5 0"
                                    IsEnabled="{Binding ConversionHistory.Count}">
-                                JSON
+                                _JSON
                             </Button>
                             <Button Command="{Binding ExportHistoryToTextCommand}"
-                                   ToolTip.Tip="Export history to text file"
+                                   ToolTip.Tip="Export history to text file (Alt+X)"
                                    Padding="5 2"
                                    Margin="0 0 5 0"
                                    IsEnabled="{Binding ConversionHistory.Count}">
-                                TXT
+                                T_XT
                             </Button>
                             <Button Command="{Binding ClearHistoryCommand}"
-                                   ToolTip.Tip="Clear conversion history (Ctrl+H)"
+                                   ToolTip.Tip="Clear conversion history (Ctrl+H or Alt+H)"
                                    Padding="5 2">
-                                Clear
+                                C_lear
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -525,7 +525,7 @@
             <Border Margin="5" Padding="8" CornerRadius="6" Background="{DynamicResource InfoBackgroundBrush}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="Temperature Converter Pro v1.0.0" FontSize="11" VerticalAlignment="Center" Margin="0 0 10 0"/>
-                    <Button Content="ℹ️ About" Padding="5 2" Click="About_Click" FontSize="11"/>
+                    <Button Content="ℹ️ _About" Padding="5 2" Click="About_Click" FontSize="11" ToolTip.Tip="About this application (Alt+A)"/>
                 </StackPanel>
             </Border>
 

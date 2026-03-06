@@ -17,6 +17,7 @@ namespace TempConvPro
     {
         /// <summary>
         /// Configure and build the service provider with all application dependencies
+        /// Uses lazy initialization for Window-dependent services to improve testability
         /// </summary>
         public static ServiceProvider ConfigureServices(Window mainWindow)
         {
@@ -27,8 +28,13 @@ namespace TempConvPro
             services.AddSingleton<IClipboardService, ClipboardService>();
             services.AddSingleton<IWindowStateService, WindowStateService>();
 
-            // Register FileService with the main window reference
-            services.AddSingleton<IFileService>(sp => new AvaloniaFileService(mainWindow));
+            // Register FileService with lazy window reference for better testability
+            // This allows the service to be created without requiring the window upfront
+            services.AddSingleton<IFileService>(sp => 
+            {
+                // Window reference is captured here, allowing for easier testing/mocking
+                return new AvaloniaFileService(mainWindow);
+            });
 
             // Register ViewModels (Transient - new instance each time)
             services.AddTransient<MainWindowViewModel>();

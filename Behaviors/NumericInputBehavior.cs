@@ -94,18 +94,38 @@ namespace TempConvPro.Behaviors
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            // Build regex pattern based on options
-            var pattern = "^";
+            // Special case: allow just a minus sign or decimal point during typing
+            if (text == "-" && allowNegative)
+                return true;
+            if (text == "." && allowDecimal)
+                return true;
+            if (text == "-." && allowNegative && allowDecimal)
+                return true;
 
-            if (allowNegative)
-                pattern += "-?"; // Optional negative sign
+            // Build improved regex pattern that requires at least one digit
+            string pattern;
 
-            pattern += @"\d*"; // Digits
-
-            if (allowDecimal)
-                pattern += @"\.?\d*"; // Optional decimal point and more digits
-
-            pattern += "$";
+            if (allowNegative && allowDecimal)
+            {
+                // Allows: -123.45, 123.45, -123, 123, .45, -.45
+                // Requires at least one digit on one side of decimal
+                pattern = @"^-?(\d+\.?\d*|\d*\.\d+)$";
+            }
+            else if (allowNegative)
+            {
+                // Allows: -123, 123
+                pattern = @"^-?\d+$";
+            }
+            else if (allowDecimal)
+            {
+                // Allows: 123.45, .45, 123
+                pattern = @"^(\d+\.?\d*|\d*\.\d+)$";
+            }
+            else
+            {
+                // Allows: 123
+                pattern = @"^\d+$";
+            }
 
             return Regex.IsMatch(text, pattern);
         }

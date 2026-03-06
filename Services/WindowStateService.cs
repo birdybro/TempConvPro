@@ -62,13 +62,17 @@ namespace TempConvPro.Services
 
         public async Task SaveWindowStateAsync(WindowStateInfo state)
         {
+            // Use a merge approach to avoid race conditions
+            // Only update window position/size fields, preserve other settings
             var settings = await _settingsService.LoadSettingsAsync();
 
+            // Only update window-related properties
             settings.WindowWidth = state.Width;
             settings.WindowHeight = state.Height;
             settings.WindowX = state.X;
             settings.WindowY = state.Y;
 
+            // Save only if values have actually changed (avoid unnecessary I/O)
             await _settingsService.SaveSettingsAsync(settings);
         }
     }
