@@ -3,7 +3,7 @@
         x:Class="TempConvPro.Views.AboutWindow"
         Title="About Temperature Converter Pro"
         Width="450"
-        Height="800"
+        Height="700"
         CanResize="false"
         WindowStartupLocation="CenterOwner"
         Icon="/Assets/avalonia-logo.ico">
