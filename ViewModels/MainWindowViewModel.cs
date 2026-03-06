@@ -522,7 +522,11 @@ namespace TempConvPro.ViewModels
                 // Apply settings
                 AutoSaveSettings = settings.AutoSave;
                 RestoreLastValues = settings.RestoreLastValues;
+
+                // Set backing fields directly during load to avoid triggering property change handlers
                 _decimalPlaces = Math.Max(0, Math.Min(8, settings.DecimalPlaces)); // Clamp to 0-8
+                OnPropertyChanged(nameof(DecimalPlaces)); // Manually notify after setting backing field
+
                 _maxHistoryEntries = Math.Max(1, Math.Min(100, settings.MaxHistoryEntries)); // Clamp to 1-100
 
                 if (settings.RestoreLastValues)
@@ -552,7 +556,7 @@ namespace TempConvPro.ViewModels
                     LastKelvin = Kelvin,
                     AutoSave = AutoSaveSettings,
                     RestoreLastValues = RestoreLastValues,
-                    DecimalPlaces = _decimalPlaces,
+                    DecimalPlaces = DecimalPlaces, // Use property instead of backing field
                     MaxHistoryEntries = _maxHistoryEntries
                 };
 
