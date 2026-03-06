@@ -14,16 +14,27 @@ using System.Threading.Tasks;
 
 namespace TempConvPro.ViewModels
 {
-    public partial class MainWindowViewModel : ViewModelBase
+    public partial class MainWindowViewModel : ViewModelBase, IAsyncDisposable
     {
+        // Conversion constants to eliminate magic numbers
         private const double AbsoluteZeroCelsius = -273.15;
+        private const double CelsiusToKelvinOffset = 273.15;
+        private const double CelsiusToFahrenheitFactor = 9d / 5d;
+        private const double FahrenheitOffset = 32;
+        private const double FahrenheitToRankineOffset = 459.67;
+        private const double CelsiusToReaumurFactor = 4d / 5d;
+        private const double CelsiusToRomerFactor = 21d / 40d;
+        private const double RomerOffset = 7.5;
+        private const double CelsiusToNewtonFactor = 33d / 100d;
+        private const double DelisleBase = 100d;
+        private const double CelsiusToDelisleFactor = 3d / 2d;
+
         private readonly IClipboardService _clipboardService;
         private readonly ISettingsService _settingsService;
         private readonly IFileService _fileService;
         private bool _isLoadingSettings = false;
         private CancellationTokenSource? _statusMessageCancellation;
         private CancellationTokenSource? _autoSaveCancellation;
-        private Task? _pendingSaveTask;
 
         [ObservableProperty]
         private string _celsius = "0";
@@ -112,12 +123,12 @@ namespace TempConvPro.ViewModels
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double c))
             {
                 CheckAbsoluteZero(c);
-                UpdateFromCelsius(c);
+                UpdateAllScalesFromCelsius(c);
 
                 // Auto-save when value changes (debounced)
                 if (AutoSaveSettings && !_isLoadingSettings)
                 {
-                    DebouncedSave();
+                    _ = DebouncedSaveAsync();
                 }
             }
         }
@@ -126,14 +137,14 @@ namespace TempConvPro.ViewModels
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double f))
             {
-                var c = (f - 32) * (5d / 9d);
+                var c = (f - FahrenheitOffset) / CelsiusToFahrenheitFactor;
                 CheckAbsoluteZero(c);
-                UpdateFromFahrenheit(f);
+                UpdateAllScalesFromCelsius(c);
 
                 // Auto-save when value changes (debounced)
                 if (AutoSaveSettings && !_isLoadingSettings)
                 {
-                    DebouncedSave();
+                    _ = DebouncedSaveAsync();
                 }
             }
         }
@@ -142,43 +153,44 @@ namespace TempConvPro.ViewModels
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double k))
             {
-                var c = k - 273.15;
+                var c = k - CelsiusToKelvinOffset;
                 CheckAbsoluteZero(c);
-                UpdateFromKelvin(k);
+                UpdateAllScalesFromCelsius(c);
 
                 // Auto-save when value changes (debounced)
                 if (AutoSaveSettings && !_isLoadingSettings)
                 {
-                    DebouncedSave();
+                    _ = DebouncedSaveAsync();
                 }
             }
         }
 
-        private void DebouncedSave()
+        private async Task DebouncedSaveAsync()
         {
             // Cancel any pending save
             _autoSaveCancellation?.Cancel();
+            _autoSaveCancellation?.Dispose();
             _autoSaveCancellation = new CancellationTokenSource();
 
-            var cancellationToken = _autoSaveCancellation.Token;
-
-            // Save after 500ms of no changes
-            _pendingSaveTask = Task.Delay(500, cancellationToken).ContinueWith(async _ =>
+            try
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    await SaveCurrentSettingsAsync();
-                }
-            }, cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
+                // Save after 500ms of no changes
+                await Task.Delay(500, _autoSaveCancellation.Token);
+                await SaveCurrentSettingsAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when a new edit occurs before delay completes
+            }
         }
 
         partial void OnRankineChanged(string value)
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double r))
             {
-                var c = (r - 491.67) * (5d / 9d);
+                var c = (r / CelsiusToFahrenheitFactor) - CelsiusToKelvinOffset;
                 CheckAbsoluteZero(c);
-                UpdateFromRankine(r);
+                UpdateAllScalesFromCelsius(c);
             }
         }
 
@@ -186,9 +198,9 @@ namespace TempConvPro.ViewModels
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double re))
             {
-                var c = re * (5d / 4d);
+                var c = re / CelsiusToReaumurFactor;
                 CheckAbsoluteZero(c);
-                UpdateFromReaumur(re);
+                UpdateAllScalesFromCelsius(c);
             }
         }
 
@@ -196,9 +208,9 @@ namespace TempConvPro.ViewModels
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double ro))
             {
-                var c = (ro - 7.5) * (40d / 21d);
+                var c = (ro - RomerOffset) / CelsiusToRomerFactor;
                 CheckAbsoluteZero(c);
-                UpdateFromRomer(ro);
+                UpdateAllScalesFromCelsius(c);
             }
         }
 
@@ -206,9 +218,9 @@ namespace TempConvPro.ViewModels
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double n))
             {
-                var c = n * (100d / 33d);
+                var c = n / CelsiusToNewtonFactor;
                 CheckAbsoluteZero(c);
-                UpdateFromNewton(n);
+                UpdateAllScalesFromCelsius(c);
             }
         }
 
@@ -216,27 +228,33 @@ namespace TempConvPro.ViewModels
         {
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double de))
             {
-                var c = 100d - (de * (2d / 3d));
+                var c = DelisleBase - (de / CelsiusToDelisleFactor);
                 CheckAbsoluteZero(c);
-                UpdateFromDelisle(de);
+                UpdateAllScalesFromCelsius(c);
             }
         }
 
         // Suppress warnings - must use backing fields to prevent infinite loops
         #pragma warning disable MVVMTK0034
-        private void UpdateFromCelsius(double c)
+        /// <summary>
+        /// Unified method to update all temperature scales from Celsius value.
+        /// This eliminates code duplication from the previous 8 separate UpdateFrom* methods.
+        /// </summary>
+        private void UpdateAllScalesFromCelsius(double c)
         {
-            var f = c * (9d / 5d) + 32;
-            var k = c + 273.15;
-            var r = (c + 273.15) * (9d / 5d);
+            // Convert from Celsius to all scales
+            var f = c * CelsiusToFahrenheitFactor + FahrenheitOffset;
+            var k = c + CelsiusToKelvinOffset;
+            var r = (c + CelsiusToKelvinOffset) * CelsiusToFahrenheitFactor;
 
             // Historical scales
-            var re = c * (4d / 5d);                          // Réaumur
-            var ro = c * (21d / 40d) + 7.5;                 // Rømer
-            var n = c * (33d / 100d);                       // Newton
-            var de = (100d - c) * (3d / 2d);               // Delisle (inverted!)
+            var re = c * CelsiusToReaumurFactor;                    // Réaumur
+            var ro = c * CelsiusToRomerFactor + RomerOffset;        // Rømer
+            var n = c * CelsiusToNewtonFactor;                      // Newton
+            var de = (DelisleBase - c) * CelsiusToDelisleFactor;    // Delisle (inverted!)
 
             var format = GetFormat();
+            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
             _fahrenheit = f.ToString(format, CultureInfo.InvariantCulture);
             _kelvin = k.ToString(format, CultureInfo.InvariantCulture);
             _rankine = r.ToString(format, CultureInfo.InvariantCulture);
@@ -245,6 +263,7 @@ namespace TempConvPro.ViewModels
             _newton = n.ToString(format, CultureInfo.InvariantCulture);
             _delisle = de.ToString(format, CultureInfo.InvariantCulture);
 
+            OnPropertyChanged(nameof(Celsius));
             OnPropertyChanged(nameof(Fahrenheit));
             OnPropertyChanged(nameof(Kelvin));
             OnPropertyChanged(nameof(Rankine));
@@ -254,230 +273,6 @@ namespace TempConvPro.ViewModels
             OnPropertyChanged(nameof(Delisle));
 
             AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-
-        }
-
-        private void UpdateFromFahrenheit(double f)
-        {
-            var c = (f - 32) * (5d / 9d);
-            var k = c + 273.15;
-            var r = f + 459.67;
-
-            // Historical scales
-            var re = c * (4d / 5d);
-            var ro = c * (21d / 40d) + 7.5;
-            var n = c * (33d / 100d);
-            var de = (100d - c) * (3d / 2d);
-
-            var format = GetFormat();
-            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
-            _kelvin = k.ToString(format, CultureInfo.InvariantCulture);
-            _rankine = r.ToString(format, CultureInfo.InvariantCulture);
-            _reaumur = re.ToString(format, CultureInfo.InvariantCulture);
-            _romer = ro.ToString(format, CultureInfo.InvariantCulture);
-            _newton = n.ToString(format, CultureInfo.InvariantCulture);
-            _delisle = de.ToString(format, CultureInfo.InvariantCulture);
-
-            OnPropertyChanged(nameof(Celsius));
-            OnPropertyChanged(nameof(Kelvin));
-            OnPropertyChanged(nameof(Rankine));
-            OnPropertyChanged(nameof(Reaumur));
-            OnPropertyChanged(nameof(Romer));
-            OnPropertyChanged(nameof(Newton));
-            OnPropertyChanged(nameof(Delisle));
-
-            AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-
-        }
-
-        private void UpdateFromKelvin(double k)
-        {
-            var c = k - 273.15;
-            var f = c * (9d / 5d) + 32;
-            var r = k * (9d / 5d);
-
-            // Historical scales
-            var re = c * (4d / 5d);
-            var ro = c * (21d / 40d) + 7.5;
-            var n = c * (33d / 100d);
-            var de = (100d - c) * (3d / 2d);
-
-            var format = GetFormat();
-            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
-            _fahrenheit = f.ToString(format, CultureInfo.InvariantCulture);
-            _rankine = r.ToString(format, CultureInfo.InvariantCulture);
-            _reaumur = re.ToString(format, CultureInfo.InvariantCulture);
-            _romer = ro.ToString(format, CultureInfo.InvariantCulture);
-            _newton = n.ToString(format, CultureInfo.InvariantCulture);
-            _delisle = de.ToString(format, CultureInfo.InvariantCulture);
-
-            OnPropertyChanged(nameof(Celsius));
-            OnPropertyChanged(nameof(Fahrenheit));
-            OnPropertyChanged(nameof(Rankine));
-            OnPropertyChanged(nameof(Reaumur));
-            OnPropertyChanged(nameof(Romer));
-            OnPropertyChanged(nameof(Newton));
-            OnPropertyChanged(nameof(Delisle));
-
-            AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-
-        }
-
-        private void UpdateFromRankine(double r)
-        {
-            var k = r * (5d / 9d);
-            var c = k - 273.15;
-            var f = r - 459.67;
-
-            // Historical scales
-            var re = c * (4d / 5d);
-            var ro = c * (21d / 40d) + 7.5;
-            var n = c * (33d / 100d);
-            var de = (100d - c) * (3d / 2d);
-
-            var format = GetFormat();
-            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
-            _fahrenheit = f.ToString(format, CultureInfo.InvariantCulture);
-            _kelvin = k.ToString(format, CultureInfo.InvariantCulture);
-            _reaumur = re.ToString(format, CultureInfo.InvariantCulture);
-            _romer = ro.ToString(format, CultureInfo.InvariantCulture);
-            _newton = n.ToString(format, CultureInfo.InvariantCulture);
-            _delisle = de.ToString(format, CultureInfo.InvariantCulture);
-
-            OnPropertyChanged(nameof(Celsius));
-            OnPropertyChanged(nameof(Fahrenheit));
-            OnPropertyChanged(nameof(Kelvin));
-            OnPropertyChanged(nameof(Reaumur));
-            OnPropertyChanged(nameof(Romer));
-            OnPropertyChanged(nameof(Newton));
-            OnPropertyChanged(nameof(Delisle));
-
-            AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R");
-
-        }
-
-        private void UpdateFromReaumur(double re)
-        {
-            var c = re * (5d / 4d);
-            var f = c * (9d / 5d) + 32;
-            var k = c + 273.15;
-            var r = (c + 273.15) * (9d / 5d);
-            var ro = c * (21d / 40d) + 7.5;
-            var n = c * (33d / 100d);
-            var de = (100d - c) * (3d / 2d);
-
-            var format = GetFormat();
-            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
-            _fahrenheit = f.ToString(format, CultureInfo.InvariantCulture);
-            _kelvin = k.ToString(format, CultureInfo.InvariantCulture);
-            _rankine = r.ToString(format, CultureInfo.InvariantCulture);
-            _romer = ro.ToString(format, CultureInfo.InvariantCulture);
-            _newton = n.ToString(format, CultureInfo.InvariantCulture);
-            _delisle = de.ToString(format, CultureInfo.InvariantCulture);
-
-            OnPropertyChanged(nameof(Celsius));
-            OnPropertyChanged(nameof(Fahrenheit));
-            OnPropertyChanged(nameof(Kelvin));
-            OnPropertyChanged(nameof(Rankine));
-            OnPropertyChanged(nameof(Romer));
-            OnPropertyChanged(nameof(Newton));
-            OnPropertyChanged(nameof(Delisle));
-
-            AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-
-        }
-
-        private void UpdateFromRomer(double ro)
-        {
-            var c = (ro - 7.5) * (40d / 21d);
-            var f = c * (9d / 5d) + 32;
-            var k = c + 273.15;
-            var r = (c + 273.15) * (9d / 5d);
-            var re = c * (4d / 5d);
-            var n = c * (33d / 100d);
-            var de = (100d - c) * (3d / 2d);
-
-            var format = GetFormat();
-            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
-            _fahrenheit = f.ToString(format, CultureInfo.InvariantCulture);
-            _kelvin = k.ToString(format, CultureInfo.InvariantCulture);
-            _rankine = r.ToString(format, CultureInfo.InvariantCulture);
-            _reaumur = re.ToString(format, CultureInfo.InvariantCulture);
-            _newton = n.ToString(format, CultureInfo.InvariantCulture);
-            _delisle = de.ToString(format, CultureInfo.InvariantCulture);
-
-            OnPropertyChanged(nameof(Celsius));
-            OnPropertyChanged(nameof(Fahrenheit));
-            OnPropertyChanged(nameof(Kelvin));
-            OnPropertyChanged(nameof(Rankine));
-            OnPropertyChanged(nameof(Reaumur));
-            OnPropertyChanged(nameof(Newton));
-            OnPropertyChanged(nameof(Delisle));
-
-            AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-
-        }
-
-        private void UpdateFromNewton(double n)
-        {
-            var c = n * (100d / 33d);
-            var f = c * (9d / 5d) + 32;
-            var k = c + 273.15;
-            var r = (c + 273.15) * (9d / 5d);
-            var re = c * (4d / 5d);
-            var ro = c * (21d / 40d) + 7.5;
-            var de = (100d - c) * (3d / 2d);
-
-            var format = GetFormat();
-            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
-            _fahrenheit = f.ToString(format, CultureInfo.InvariantCulture);
-            _kelvin = k.ToString(format, CultureInfo.InvariantCulture);
-            _rankine = r.ToString(format, CultureInfo.InvariantCulture);
-            _reaumur = re.ToString(format, CultureInfo.InvariantCulture);
-            _romer = ro.ToString(format, CultureInfo.InvariantCulture);
-            _delisle = de.ToString(format, CultureInfo.InvariantCulture);
-
-            OnPropertyChanged(nameof(Celsius));
-            OnPropertyChanged(nameof(Fahrenheit));
-            OnPropertyChanged(nameof(Kelvin));
-            OnPropertyChanged(nameof(Rankine));
-            OnPropertyChanged(nameof(Reaumur));
-            OnPropertyChanged(nameof(Romer));
-            OnPropertyChanged(nameof(Delisle));
-
-            AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-
-        }
-
-        private void UpdateFromDelisle(double de)
-        {
-            var c = 100d - (de * (2d / 3d));
-            var f = c * (9d / 5d) + 32;
-            var k = c + 273.15;
-            var r = (c + 273.15) * (9d / 5d);
-            var re = c * (4d / 5d);
-            var ro = c * (21d / 40d) + 7.5;
-            var n = c * (33d / 100d);
-
-            var format = GetFormat();
-            _celsius = c.ToString(format, CultureInfo.InvariantCulture);
-            _fahrenheit = f.ToString(format, CultureInfo.InvariantCulture);
-            _kelvin = k.ToString(format, CultureInfo.InvariantCulture);
-            _rankine = r.ToString(format, CultureInfo.InvariantCulture);
-            _reaumur = re.ToString(format, CultureInfo.InvariantCulture);
-            _romer = ro.ToString(format, CultureInfo.InvariantCulture);
-            _newton = n.ToString(format, CultureInfo.InvariantCulture);
-
-            OnPropertyChanged(nameof(Celsius));
-            OnPropertyChanged(nameof(Fahrenheit));
-            OnPropertyChanged(nameof(Kelvin));
-            OnPropertyChanged(nameof(Rankine));
-            OnPropertyChanged(nameof(Reaumur));
-            OnPropertyChanged(nameof(Romer));
-            OnPropertyChanged(nameof(Newton));
-
-            AddToHistory($"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F");
-
         }
         #pragma warning restore MVVMTK0034
 
@@ -770,6 +565,30 @@ namespace TempConvPro.ViewModels
                 return $"{c.ToString($"F{DecimalPlaces}")}°C = {f.ToString($"F{DecimalPlaces}")}°F = {k.ToString($"F{DecimalPlaces}")}K = {r.ToString($"F{DecimalPlaces}")}°R";
             }
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Dispose pattern to clean up cancellation tokens and prevent memory leaks
+        /// </summary>
+        public async ValueTask DisposeAsync()
+        {
+            // Cancel any pending operations
+            _statusMessageCancellation?.Cancel();
+            _autoSaveCancellation?.Cancel();
+
+            // Give a moment for any in-flight saves to complete
+            try
+            {
+                await Task.Delay(100);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected
+            }
+
+            // Dispose cancellation tokens
+            _statusMessageCancellation?.Dispose();
+            _autoSaveCancellation?.Dispose();
         }
     }
 }

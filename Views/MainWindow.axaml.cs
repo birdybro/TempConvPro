@@ -51,10 +51,11 @@ namespace TempConvPro.Views
             // Save window state
             await SaveWindowStateAsync();
 
-            // Save app settings
+            // Save app settings and dispose ViewModel
             if (DataContext is MainWindowViewModel vm)
             {
                 await vm.SaveCurrentSettingsAsync();
+                await vm.DisposeAsync();
             }
         }
 
