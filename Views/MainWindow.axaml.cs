@@ -15,6 +15,7 @@ namespace TempConvPro.Views
     public partial class MainWindow : Window
     {
         private readonly IWindowStateService _windowStateService;
+        private HistoricalScalesWindow? _historicalScalesWindow;
 
         /// <summary>
         /// Parameterless constructor for XAML designer and runtime loader
@@ -40,20 +41,79 @@ namespace TempConvPro.Views
             if (DataContext is MainWindowViewModel vm)
             {
                 await vm.InitializeAsync();
+
+                // Subscribe to ShowHistoricalScales property changes
+                vm.PropertyChanged += ViewModel_PropertyChanged;
             }
 
             // Restore window state
             await RestoreWindowStateAsync();
         }
 
+        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.ShowHistoricalScales))
+            {
+                if (DataContext is MainWindowViewModel vm)
+                {
+                    HandleHistoricalScalesWindow(vm.ShowHistoricalScales);
+                }
+            }
+        }
+
+        private void HandleHistoricalScalesWindow(bool show)
+        {
+            if (show)
+            {
+                // Open the historical scales window if not already open
+                if (_historicalScalesWindow == null || !_historicalScalesWindow.IsVisible)
+                {
+                    _historicalScalesWindow = new HistoricalScalesWindow
+                    {
+                        DataContext = this.DataContext // Share the same ViewModel
+                    };
+
+                    // Position window to the right of main window
+                    _historicalScalesWindow.Position = new PixelPoint(
+                        Position.X + (int)Width + 10,
+                        Position.Y
+                    );
+
+                    // Handle window closing
+                    _historicalScalesWindow.Closed += (s, e) =>
+                    {
+                        _historicalScalesWindow = null;
+
+                        // Uncheck the checkbox when window is closed
+                        if (DataContext is MainWindowViewModel vm)
+                        {
+                            vm.ShowHistoricalScales = false;
+                        }
+                    };
+
+                    _historicalScalesWindow.Show();
+                }
+            }
+            else
+            {
+                // Close the historical scales window
+                _historicalScalesWindow?.Close();
+                _historicalScalesWindow = null;
+            }
+        }
+
         private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
         {
+            // Close historical scales window if open
+            _historicalScalesWindow?.Close();
+
             // Save window state
             await SaveWindowStateAsync();
 
             // Save app settings and dispose ViewModel
             if (DataContext is MainWindowViewModel vm)
             {
+                vm.PropertyChanged -= ViewModel_PropertyChanged;
                 await vm.SaveCurrentSettingsAsync();
                 await vm.DisposeAsync();
             }

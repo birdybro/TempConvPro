@@ -1,0 +1,165 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TempConvPro.ViewModels"
+        xmlns:behaviors="using:TempConvPro.Behaviors"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="TempConvPro.Views.HistoricalScalesWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Historical Temperature Scales"
+        Width="500"
+        Height="400"
+        MinWidth="450"
+        MinHeight="350"
+        CanResize="True">
+
+    <Window.Resources>
+        <!-- Theme-aware colors -->
+        <SolidColorBrush x:Key="SectionBackgroundBrush" Color="{DynamicResource SystemAltMediumColor}" />
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Border Padding="10" 
+                CornerRadius="8" 
+                Background="{DynamicResource SectionBackgroundBrush}">
+            <Grid ColumnDefinitions="140, *, 60"
+                  RowDefinitions="Auto, Auto, Auto, Auto, Auto">
+
+                <!-- Header -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                          Margin="10 5" 
+                          FontWeight="SemiBold"
+                          FontSize="16"
+                          HorizontalAlignment="Center"
+                          Text="📜 Historical Temperature Scales"/>
+
+                <!-- Réaumur -->
+                <TextBlock Grid.Row="1" Grid.Column="0" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Réaumur scale (historical European)&#x0a;Formula: °Ré = C × (4/5)">
+                    Réaumur
+                </TextBlock>
+                <TextBox Grid.Row="1" Grid.Column="1" 
+                        Margin="5" 
+                        Text="{Binding Reaumur}"
+                        Watermark="Enter Réaumur temperature"
+                        behaviors:NumericInputBehavior.IsEnabled="True"
+                        behaviors:NumericInputBehavior.AllowNegative="True"
+                        behaviors:NumericInputBehavior.AllowDecimal="True">
+                    <TextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                            <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                </TextBox>
+                <TextBlock Grid.Row="1" Grid.Column="2" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          FontSize="16">
+                    °Ré
+                </TextBlock>
+
+                <!-- Rømer -->
+                <TextBlock Grid.Row="2" Grid.Column="0" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Rømer scale (Danish, 1701)&#x0a;Formula: °Rø = C × (21/40) + 7.5">
+                    Rømer
+                </TextBlock>
+                <TextBox Grid.Row="2" Grid.Column="1" 
+                        Margin="5" 
+                        Text="{Binding Romer}"
+                        Watermark="Enter Rømer temperature"
+                        behaviors:NumericInputBehavior.IsEnabled="True"
+                        behaviors:NumericInputBehavior.AllowNegative="True"
+                        behaviors:NumericInputBehavior.AllowDecimal="True">
+                    <TextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                            <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                </TextBox>
+                <TextBlock Grid.Row="2" Grid.Column="2" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          FontSize="16">
+                    °Rø
+                </TextBlock>
+
+                <!-- Newton -->
+                <TextBlock Grid.Row="3" Grid.Column="0" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Newton scale (Isaac Newton, 1701)&#x0a;Formula: °N = C × (33/100)">
+                    Newton
+                </TextBlock>
+                <TextBox Grid.Row="3" Grid.Column="1" 
+                        Margin="5" 
+                        Text="{Binding Newton}"
+                        Watermark="Enter Newton temperature"
+                        behaviors:NumericInputBehavior.IsEnabled="True"
+                        behaviors:NumericInputBehavior.AllowNegative="True"
+                        behaviors:NumericInputBehavior.AllowDecimal="True">
+                    <TextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                            <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                </TextBox>
+                <TextBlock Grid.Row="3" Grid.Column="2" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          FontSize="16">
+                    °N
+                </TextBlock>
+
+                <!-- Delisle -->
+                <TextBlock Grid.Row="4" Grid.Column="0" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Delisle scale (Russian, inverted!)&#x0a;Formula: °De = (100 - C) × (3/2)">
+                    Delisle
+                </TextBlock>
+                <TextBox Grid.Row="4" Grid.Column="1" 
+                        Margin="5" 
+                        Text="{Binding Delisle}"
+                        Watermark="Enter Delisle temperature"
+                        behaviors:NumericInputBehavior.IsEnabled="True"
+                        behaviors:NumericInputBehavior.AllowNegative="True"
+                        behaviors:NumericInputBehavior.AllowDecimal="True">
+                    <TextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy" Command="{Binding CopyToClipboardCommand}"/>
+                            <MenuItem Header="Clear Field" Command="{Binding ClearAllCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Save as Preset" Command="{Binding SaveAsCustomPresetCommand}"/>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                </TextBox>
+                <TextBlock Grid.Row="4" Grid.Column="2" 
+                          Margin="10" 
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          FontSize="16">
+                    °De
+                </TextBlock>
+            </Grid>
+        </Border>
+    </Grid>
+
+</Window>
